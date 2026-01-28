@@ -1,0 +1,121 @@
+clearvars; clc;
+%% Number of agents = 200, 0 <= number of bonds <= 100
+grid_b0 = mean([10.019338, 9.001814, 8.847106]);
+grid_b10 = mean([16.315068, 16.880906, 15.062451]);
+grid_b20 = mean([20.160150, 20.469201, 20.383450]);
+grid_b30 = mean([22.281403, 24.550813, 23.967153]);
+grid_b40 = mean([23.520849, 22.184957, 24.951211]);
+grid_b50 = mean([24.882225, 25.904599, 28.889234]);
+grid_b60 = mean([27.860773, 29.797807, 28.255725]);
+grid_b70 = mean([30.575163, 32.561358, 31.714298]);
+grid_b80 = mean([33.055152, 31.316763, 31.924554]);
+grid_b90 = mean([35.268831, 36.661438, 34.301128]);
+grid_b100 = mean([37.418419, 41.324165, 39.613223]);
+grid_bond_times = [grid_b0,grid_b10,grid_b20,grid_b30,grid_b40,grid_b50,grid_b60,grid_b70,grid_b80,grid_b90,grid_b100];
+
+vec_b0 = mean([9.439465, 8.937010, 8.757377]);
+vec_b10 = mean([16.838766, 14.780279, 13.145298]);
+vec_b20 = mean([14.311478, 14.302599, 14.331937]);
+vec_b30 = mean([15.444096, 15.004667, 14.693305]);
+vec_b40 = mean([15.201163, 16.763058, 15.873849]);
+vec_b50 = mean([16.617851, 15.395309, 15.972487]);
+vec_b60 = mean([16.630864, 15.793454, 17.293638]);
+vec_b70 = mean([16.385684, 17.529752, 16.622206]);
+vec_b80 = mean([17.172900, 16.881387, 16.511368]);
+vec_b90 = mean([17.954112, 17.102176, 17.116548]);
+vec_b100 = mean([17.437080, 17.787889, 17.148775]);
+vec_bond_times = [vec_b0,vec_b10,vec_b20,vec_b30,vec_b40,vec_b50,vec_b60,vec_b70,vec_b80,vec_b90,vec_b100];
+
+bond_counts = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+figure
+plot(bond_counts, grid_bond_times, '-o', 'Color',[0.5 0 0.8], 'LineWidth',1.5)
+hold on
+plot(bond_counts, vec_bond_times, '-o', 'Color', [0 0 1], 'LineWidth', 1.5)
+grid on
+xlabel('# bonds')
+ylabel('run time (s)')
+title('run times vs. number of bonds in 200-agent simulation with grid optimization & vectorization')
+subtitle('simulated time: 1 second')
+xlim([0,100])
+ylim([0,45])
+legend('grid optimization','vectorization')
+
+%% Number of bonds = 10, 100 <= number of agents <= 1000
+grid_a100 = mean([15.119964, 15.041715, 13.561162]);
+grid_a200 = mean([18.065007, 18.501956, 17.891514]);
+grid_a300 = mean([17.080821, 15.559617, 17.251470]);
+grid_a400 = mean([18.958997, 19.205295, 20.343125]);
+grid_a500 = mean([19.864995, 23.429125, 21.356824]);
+grid_a600 = mean([23.215704, 26.904043, 25.633591]);
+grid_a700 = mean([29.611470, 28.477167, 29.403267]);
+grid_a800 = mean([54.009788, 78.250090, 35.506093]);
+grid_a900 = mean([55.287123, 44.974701, 67.446771]);
+grid_a1000 = mean([72.319850, 103.405111, 90.348081]);
+grid_agent_times = [grid_a100,grid_a200,grid_a300,grid_a400,grid_a500,grid_a600,grid_a700,grid_a800,grid_a900,grid_a1000];
+
+vec_a100 = mean([7.957429, 7.263890, 6.809034]);
+vec_a200 = mean([13.358635, 12.957798, 13.256536]);
+vec_a300 = mean([19.298648, 20.688840, 20.758147]);
+vec_a400 = mean([33.096004, 29.831035, 31.774772]);
+vec_a500 = mean([47.355682, 49.381952, 41.639500]);
+vec_a600 = mean([57.583124]);
+vec_a700 = mean([90.889338]);
+vec_a800 = mean([122.910752]);
+vec_a900 = mean([165.533705]);
+vec_a1000 = mean([185.275519]);
+vec_agent_times = [vec_a100,vec_a200,vec_a300,vec_a400,vec_a500,vec_a600,vec_a700,vec_a800,vec_a900,vec_a1000];
+
+agent_counts = [100,200,300,400,500,600,700,800,900,1000];
+
+figure
+plot(agent_counts, grid_agent_times, '-o', 'Color',[0.5 0 0.8], 'LineWidth',1.5)
+hold on
+plot(agent_counts, vec_agent_times, '-o', 'Color', [0 0 1], 'LineWidth', 1.5)
+grid on
+xlabel('# agents')
+ylabel('run time (s)')
+title('run times vs. number of agents in simulation with grid optimization & vectorization')
+subtitle('simulated time: 1 second    number of bonds: 10')
+xlim([0,1000])
+ylim([0,200])
+legend('grid optimization','vectorization')
+
+%% Number of agents = 500, 0 <= number of bonds <= 250 (25 bond increment)
+v500_b0 = 31.566313;
+v500_b25 = 48.970693;
+v500_b50 = 58.512343;
+v500_b75 = 56.800132;
+v500_b100 = 57.681680;
+v500_b125 = 69.292866;
+v500_b150 = 66.997709;
+v500_b175 = 67.336084;
+v500_b200 = 65.609812;
+v500_b225 = 69.682475;
+v500_b250 = 66.242159;
+
+times_v500 = [v500_b0, v500_b25, v500_b50, v500_b75, v500_b100, v500_b125, v500_b150, v500_b175, v500_b200, v500_b225, v500_b250];
+bonds_v500 = [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250];
+
+g500_b0 = 16.733485;
+g500_b50 = 39.127986;
+g500_b100 = 55.232500;
+g500_b150 = 84.106883;
+g500_b200 = 99.414705;
+g500_b250 = 126.813804; % comparison w/grid system
+
+times_g500 = [g500_b0, g500_b50, g500_b100, g500_b150, g500_b200, g500_b250];
+bonds_g500 = [0, 50, 100, 150, 200, 250];
+
+figure
+plot(bonds_g500, times_g500, '-o', 'Color', [0 0 1], 'LineWidth', 1.5)
+hold on
+plot(bonds_v500, times_v500, '-o', 'Color',[0.5 0 0.8], 'LineWidth',1.5)
+grid on
+xlabel('# agents')
+ylabel('run time (s)')
+title('run times vs. number of bonds in simulation with vectorization')
+subtitle('simulated time: 1 second    number of agents: 500')
+xlim([0,250])
+ylim([0,130])
+legend('grid optimization','vectorization')

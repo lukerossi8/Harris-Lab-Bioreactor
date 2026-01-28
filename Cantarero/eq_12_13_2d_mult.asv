@@ -1,0 +1,95 @@
+clearvars; close all; clc;
+% Time range, constant values, and initial conditions
+tspan = [0, 150];
+mu = 10^-3; % Water dynamic viscosity at 20°C, in Pa*s
+
+% Defining 3 microcarriers
+n_microcarriers = 3;
+r_i = [90e-6, 80e-6, 70e-6]; % Microcarrier radii, in m
+m = [2.79e-5, 1.79e-5, 0.79e-5]; % Microcarrier mass, in kg
+
+g = -9.81; % m/s^2
+% Make this into a vector with x and y cpts
+p_f = 1; % g/ml
+p_i = 1.1; %g/ml, average cell density
+% In the future, calculate the correct densities, and make this a vector
+
+v0 = [100, -100; 80, 90; -10, 30]; % Initial velocity
+
+vf = [30, -20]; % Fluid velocity
+vfx = vf(1);
+vfy = vf(2);
+
+% Clean up current code by making p_i a vector and g a vector
+% No need to plot analytical solution for this one
+% Implement a Rankine vortex velocity field
+% Start by figuring out how to plot this field on its own
+% Then integrate it into this code
+
+% Combine initial velocities of all microcarriers
+v0_all = reshape(v0', [], 1);  % This converts the v0 matrix to a column vector
+
+% Pass the number of microcarriers into the ODE solver
+odeFun = @(t, v) eom(t, v, mu, r_i, vf, m, g, p_f, p_i, n_microcarriers);
+[t, v_all] = ode45(odeFun, tspan, v0_all);
+
+% % Define the analytical solution in x direction (solved by hand)
+% syms t_an
+% a = -(6 * pi * mu * r_i) / m;
+% vx_an = vfx + (v0x - vfx) * exp(a * t_an);
+% vx_an_func = matlabFunction(vx_an, 'Vars', {t_an});
+% 
+% % Define analytical solution in y direction
+% b = g * (1 - p_f / p_i);
+% c = -a * vfx + b;
+% vy_an = -c / a + (v0y + c / a) * exp(a * t_an);
+% vy_an_func = matlabFunction(vy_an, 'Vars', {t_an});
+
+% Plotting the numerical solution in x direction
+figure
+hold on
+for i=1:n_microcarriers
+    plot(t, v_all(:, 2*i - 1));
+end
+xlabel('Time (s)')
+ylabel('x direction velocity (m/s)')
+title('Numerical solution of buoyancy/gravity and drag force ODE, all microcarriers, x direction')
+grid on
+legend show
+
+% Plotting the analytical solution in x direction
+
+% Plotting the numerical solution in y direction
+figure
+hold on
+for i=1:n_microcarriers
+    plot(t, v_all(:, 2*i));
+end
+xlabel('Time (s)')
+ylabel('y direction velocity (m/s)')
+title('Numerical solution of buoyancy/gravity and drag force ODE, all microcarriers, y direction')
+grid on
+legend show
+% Plotting the analytical solution in y direction
+
+
+function dvdt = eom(t, v, mu, r_i, vf, m, g, p_f, p_i, n_microcarriers)
+    dvdt = zeros(2 * n_microcarriers, 1);  % Initialize the output vector for all microcarriers
+    for i = 1:n_microcarriers
+        % Extract velocities for each particle
+        vx = v(2*i - 1);  % x-velocity of particle i
+        vy = v(2*i);      % y-velocity of particle i
+        r = r_i(i);       % radius of particle i
+        mi = m(i);        % mass of particle i
+        vfx = vf(1);      % Fluid velocity in x
+        vfy = vf(2);      % Fluid velocity in y
+        
+        % Drag and gravity force equations
+        dvxdt = -(6 * pi * mu * r * (vx - vfx)) / mi;
+        dvydt = -(6 * pi * mu * r * (vy - vfy)) / mi + g * (1 - p_f / p_i);
+        
+        % Store the velocity derivatives
+        dvdt(2*i - 1) = dvxdt;
+        dvdt(2*i) = dvydt;
+    end
+end

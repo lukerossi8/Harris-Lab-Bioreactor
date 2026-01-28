@@ -1,0 +1,31 @@
+clc; clear all;
+files = dir;
+
+all_data = cell(1, 99);
+
+for i=3:length(files)
+    
+    
+%% Set up the Import Options and import the data
+opts = delimitedTextImportOptions("NumVariables", 13);
+
+% Specify range and delimiter
+opts.DataLines = [2, Inf];
+opts.Delimiter = " ";
+
+% Specify column names and types
+opts.VariableNames = ["x", "y", "ux", "uy", "vol_frac", "ufx", "ufy", "cs", "fsx", "fsy", "fmx", "fmy", "vorticity"];
+opts.VariableTypes = ["double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double"];
+
+% Specify file level properties
+opts.ExtraColumnsRule = "ignore";
+opts.EmptyLineRule = "read";
+opts.ConsecutiveDelimitersRule = "join";
+opts.LeadingDelimitersRule = "ignore";
+
+% Import the data
+Dataall6449 = readtable("/Users/lukerossi/CM Research/Taylor-Green Vortex/cell contact implementation/Bioreactor_data_7deg_20rpm_lv6_onecycle/Data_all_64_49.1815849303_0.dat", opts);
+Dataall6449_sort1 = sortrows(Dataall6449,1);
+Dataall6449_sort2 = sortrows(Dataall6449_sort1,2,'descend');
+
+end
