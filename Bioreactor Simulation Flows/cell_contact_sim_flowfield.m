@@ -3,7 +3,7 @@ tic
 clearvars; clc;
 %% Time range, constant values, and initial conditions
 tstart = 0;
-tstop = 1.3;
+tstop = 1;
 tspan = [tstart, tstop];
 mu = 10^-3; % Water dynamic viscosity at 20°C, in Pa*s
 
@@ -110,7 +110,8 @@ t_plot = t; % storing vector with all values of t throughout the ode45 call
 z_all_plot = z_all; % storing vector with all values of z
 
 %% Model boundary interactions
-% Define boundary logic in the while loop
+% Define boundary logic in the while loop. This is a fallback in case a
+% particle hits the boundary and ode45 stops early
 while t(end) < tstop
     % z vector takes the form [x1; x2; x3;...; y1; y2; y3;...; vx1; vx2; vx3;...; vy1; vy2; vy3;...]
     % Separate into vectors x0, y0, vx0, vy0

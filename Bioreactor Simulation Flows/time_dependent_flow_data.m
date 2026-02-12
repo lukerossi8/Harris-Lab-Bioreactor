@@ -1,12 +1,18 @@
 clc; clearvars;
-files = dir;
 
-all_data = [];
-times = [];
+%% Constructing a directory of all input data
+% Each file contains the flow data at a given timestep
+files = struct2table(dir("**")); % Creating a directory of all files in the current folder and all subfolders
+data_folder = "Bioreactor_data_7deg_20rpm_lv6_onecycle"; % must be a direct subfolder of current folder
+in_data_folder = contains(files.folder, data_folder); % Identifying the files in the desired subfolder
+data_files = files(in_data_folder, :); % Filtering for only the files in the desired subfolder, i.e. the data files
 
-for i=3:length(files)-3
-    filename = string(files(i).name);
-    filepath = "/Users/lukerossi/CM Research/Taylor-Green Vortex/cell contact implementation/Bioreactor_data_7deg_20rpm_lv6_onecycle/" + files(i).name;
+all_data = []; % Initializing array to hold all the data
+times = zeros(height(data_files)-2, 1); % Initializing array to hold each timestep associated with a data file
+
+for i=3:height(data_files) % Ignoring first two files, '.' and '..'
+    filename = data_files{i, "name"};
+    filepath = "../Bioreactor Simulation Flows/Bioreactor_data_7deg_20rpm_lv6_onecycle/" + filename;
 
     %% Set up the Import Options and import the data
     opts = delimitedTextImportOptions("NumVariables", 13);
@@ -35,9 +41,9 @@ for i=3:length(files)-3
 
     % Extracting the time from the file name
     to_remove = ["Data_all_64_", "_0.dat"];
-    time = erase(filename, to_remove);
-
-    times(end+1, :) = time;
+    time_str = erase(filename, to_remove);
+    time = str2double(time_str);
+    times(i-2) = time;
 end
 
 snapshot1 = all_data(:,:,67);
