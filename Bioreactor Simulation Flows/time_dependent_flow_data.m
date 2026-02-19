@@ -11,6 +11,7 @@ all_data = []; % Initializing array to hold all the data
 times = zeros(height(data_files)-2, 1); % Initializing array to hold each timestep associated with a data file
 
 for i=3:height(data_files) % Ignoring first two files, '.' and '..'
+    
     filename = data_files{i, "name"};
     filepath = "../Bioreactor Simulation Flows/Bioreactor_data_7deg_20rpm_lv6_onecycle/" + filename;
 
@@ -46,8 +47,8 @@ for i=3:height(data_files) % Ignoring first two files, '.' and '..'
     times(i-2) = time;
 end
 
-snapshot1 = all_data(:,:,67);
-snapshot2 = all_data(:,:,4);
+%snapshot1 = all_data(:,:,67); 
+%snapshot2 = all_data(:,:,4);
 
 % Dimensionalizing
 % Reference frames

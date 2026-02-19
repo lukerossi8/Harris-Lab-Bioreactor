@@ -1,36 +1,57 @@
+function my_output = cell_contact_sim_flowfield(position)
+% cell_contact_sim_flowfield models the motion and bonding of agents in a
+% flowfield
+% Syntax:
+%   cell_contact_sim_flowfield()
+% Inputs:
+%   None
+% Outputs
+%   my_output   Struct containing the following fields:
+%       X_grid      Matrix containing x position at each point in 
+%                   background grid
+%       Y_grid      Matrix containing y position at each point in 
+%                   background grid
+%       vfx_disc    Matrix containing x component of background flow
+%                   velocity at each point in background grid
+%       vfy_disc    Matrix containing y component of background flow
+%                   velocity at each point in background grid
+%       z_all_plot  Matrix containing position and velocity data (x and y
+%                   components) for each agent at each timestep
+%       n_agents    Double representing the number of agents being modeled
+%       s0          Vector containing initial positions of all agents
+%       flow_data   Imported flow data from the time_dependent_flow_data
+%                   script
+%       t_plot      Vector containing the time at each simulation step
+
+arguments
+    position (1,1) string {mustBeMember(position, ["random", "random bonded", "manual"])}
+end
+
 tic
 
-clearvars; clc;
-%% Time range, constant values, and initial conditions
+% Defining time range
 tstart = 0;
-tstop = 1;
+tstop = .1;
 tspan = [tstart, tstop];
+
+% Defining fluid and gravitational constants
 mu = 10^-3; % Water dynamic viscosity at 20°C, in Pa*s
-
-%% Define the vortex, bounds, & background velocity field
-
-% Load in the flow data and times from the .mat file
-% Normalize the times so they start at 0 rather than 48.58
-% Initialize the flow field as the first flow field in the time dependent
-% data
-% In the eom: compare the current simulation timestep to the next timestep
-% in the times list. If the current simulation time is greater, update the 
-% flow field and start comparing with the next time in the times list
+rho_f = 1000; % kg/m^3
+g = [0, -9.81]; % gravitational acceleration, m/s^2
+gx = g(1);
+gy = g(2);
 
 % Loading the simulation results, separating into flow data and time steps
-
 sim_results = load("time_dependent_flow_data_out.mat");
 flow_data = sim_results.all_data;
-global times
 times = sim_results.times;
 times = times - times(1); % normalizing to start at 0
-
-flow_data_initial = flow_data(:,:,1);
 
 % Define the flow field points
 x_grid = flow_data(:,1,1);
 y_grid = flow_data(:,2,1);
 
+% Combine the flow field points into a meshgrid 
 [X_grid, Y_grid] = meshgrid(unique(x_grid), unique(y_grid));
 Y_grid = flip(Y_grid, 1);
 
@@ -41,47 +62,45 @@ vfy_vect = flow_data(:,4,1);
 vfx_disc = reshape(vfx_vect, 64, 64)';
 vfy_disc = reshape(vfy_vect, 64, 64)';
 
+% Define simulation boundaries
 floor = -0.15; % low y boundary
 ceil = 0.15; % high y boundary
 l_wall = min(x_grid); % left x boundary
 r_wall = max(y_grid); % right x boundary
 
-%% Defining agents & bonded pair matrix
+% Defining agents - radius, mass, and density of each
 n_agents = 6; % number of agents modeled
 r_i = 90e-6 + zeros(n_agents, 1); % Agent radii, in m
 m = 2.79e-9 + zeros(n_agents, 1); % Agent mass, in kg
-
-g = [0, -9.81]; % gravitational acceleration, m/s^2
-gx = g(1);
-gy = g(2);
-rho_f = 1000; % kg/m^3
 rho_i = m ./ (4 / 3 * pi * r_i.^3); % Density in g/cm^3
 
-global Bonded_pairs;
-Bonded_pairs = zeros(n_agents, n_agents); % Boolean matrix representing pairs of bonded agents (initialize as n x n matrix of zeros)
+% Initialize Boolean matrix representing which pairs of agents are bonded
+Bonded_pairs = zeros(n_agents, n_agents);
+
+% Set positions of agents — randomly, randomly with bonds, or manually
 
 % Random position setting
+if position == "random"
+    x0 = l_wall + 0.1*(r_wall - l_wall) + 0.4*(r_wall - l_wall).*rand(n_agents, 1);
+    y0 = floor + 0.1*(ceil - floor) + 0.3*(ceil - floor).*rand(n_agents, 1);
 
-x0 = l_wall + 0.1*(r_wall - l_wall) + 0.4*(r_wall - l_wall).*rand(n_agents, 1);
-y0 = floor + 0.1*(ceil - floor) + 0.3*(ceil - floor).*rand(n_agents, 1);
+    % Random bonded position setting
+elseif position == "random bonded"
+    n_bonds = 3; % must be in [0, n_agents/2]
+    n_unbonded = n_agents - 2*n_bonds;
+    x01 = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_bonds, 1);
+    x02 = x01 + 14e-5;
+    x0_unbonded = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_unbonded, 1);
+    x0 = [x01;x02;x0_unbonded];
+    y01 = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_bonds, 1);
+    y0_unbonded = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_unbonded, 1);
+    y0 = [y01;y01;y0_unbonded];
 
-% Random bonded position setting
-% n_bonds = 50;
-% n_unbonded = n_agents - 2*n_bonds;
-% 
-% x01 = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_bonds, 1);
-% x02 = x01 + 14e-5;
-% x0_unbonded = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_unbonded, 1);
-% x0 = [x01;x02;x0_unbonded];
-% 
-% y01 = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_bonds, 1);
-% y0_unbonded = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_unbonded, 1);
-% y0 = [y01;y01;y0_unbonded];
-
-% Manual position setting
-% x0 = [0.276186511572733;0.047690676239594;0.338317326257966;0.154875577771002;0.065197951308746;0.248375556356238];
-% y0 = [-0.040888748586254;-0.030997954552837;-0.119952986217875;-0.042110526808828;-0.064869017746440;-0.030904481486205];
-
+    % Manual position setting
+else
+    x0 = [0.276186511572733;0.047690676239594;0.338317326257966;0.154875577771002;0.065197951308746;0.248375556356238];
+    y0 = [-0.040888748586254;-0.030997954552837;-0.119952986217875;-0.042110526808828;-0.064869017746440;-0.030904481486205];
+end
 s0 = [x0; y0]; % Initial positions, m
 
 vx0 = zeros(n_agents, 1); % Initial x velocity, m/s
@@ -188,7 +207,6 @@ vx = z(2*n_agents+1:3*n_agents);  % x velocities
 vy = z(3*n_agents+1:end);      % y velocities
 
 % Compute periodic time
-global times
 t_eff = mod(t, times(end)); % effective time inside a single period
 
 % % Without background interpolation
@@ -248,7 +266,6 @@ D = sqrt(X.^2 + Y.^2); % distance between pairs
 Theta = atan2(-Y, -X);
 R = r_i + r_i'; % Sum of radii of pairs
 Delta_ij = D - R; % Degree of overlap or separation of pairs
-global Bonded_pairs;
 
 % Bonding thresholds (for each pair)
 Delta_c = R; % Bond formation threshold, m
@@ -284,144 +301,11 @@ dzdt(2*n_agents+1:3*n_agents) = dvxdt;
 dzdt(3*n_agents+1:end) = dvydt;
 end
 
-%% Plot agent trajectories w/ background velocity & vorticity in bioreactor sim flow fields
-figure
-hold on
-[curlz,cav] = curl(X_grid, Y_grid, vfx_disc, vfy_disc);
-c = pcolor(X_grid, Y_grid, curlz);
-c.FaceColor = 'interp';
-c.EdgeColor = 'none';
-
-% Define three colors for the gradient
-color_pos = [0.9590 0.7240 0.1550];   % Yellow for positive vorticity
-color_neg = [0.00392156862745098 0.44313725490196076 0.7372549019607844];   % Blue for negative vorticity
-color_zero = [0.8480392156862745 0.8911764705882353 0.9225490196078431];  % White for zero vorticity
-
-% Create a custom colormap with a smooth transition between these three colors
-numColors = 256;  % Number of colors in the colormap (higher resolution)
-cmap_neg_to_zero = [linspace(color_neg(1), color_zero(1), numColors/2)', ...
-    linspace(color_neg(2), color_zero(2), numColors/2)', ...
-    linspace(color_neg(3), color_zero(3), numColors/2)'];
-
-cmap_zero_to_pos = [linspace(color_zero(1), color_pos(1), numColors/2)', ...
-    linspace(color_zero(2), color_pos(2), numColors/2)', ...
-    linspace(color_zero(3), color_pos(3), numColors/2)'];
-
-% Combine the two halves to form the full colormap
-cmap = [cmap_neg_to_zero; cmap_zero_to_pos];
-
-colormap(cmap);
-cb = colorbar;
-yl = ylabel(cb,'Vorticity','FontSize',10,'Rotation',270);
-
-q = quiver(X_grid, Y_grid, vfx_disc, vfy_disc, 'k');
-
-col_list = ["black", "red", "blue", "magenta"];
-
-x_plot = z_all_plot(:,1:n_agents);
-y_plot = z_all_plot(:,n_agents+1:2*n_agents);
-vx_plot = z_all_plot(:,2*n_agents+1:3*n_agents);
-vy_plot = z_all_plot(:,3*n_agents+1:4*n_agents);
-v_plot = sqrt(vx_plot.^2+vy_plot.^2);
-
-for i=1:n_agents
-    plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), "LineWidth", 1.25);
-    plot(s0(i), s0(i+n_agents), "or", "LineWidth", 1.25)
-end
-grid on
-xlabel('x position (m)')
-ylabel('y position (m)')
-ylim([-0.15 0.15])
-title('Cell kinetics model in time-dependent bioreactor simulation flow field')
-subtitle('simulation time: 0.91 seconds — period time: 0.595 seconds')
-
-%% Plot agent trajectories w/ background velocity & volume fraction in TG vortex
-figure
-hold on
-vol_frac = flow_data(:,5,1); % INITIAL volume fraction data
-vol_frac_grid = reshape(vol_frac, 64, 64)';
-c = pcolor(X_grid, Y_grid, vol_frac_grid);
-c.FaceColor = 'interp';
-c.EdgeColor = 'none';
-
-% Define three colors for the gradient
-[0.9290 0.6940 0.1250];   % Yellow for 1 vf
-color_neg = [1 1 1];   % White for 0 vf
-% Create a custom colormap with a smooth transition between these three colors
-numColors = 256;  % Number of colors in the colormap (higher resolution)
-cmap = [linspace(color_neg(1), color_pos(1), numColors)', ...
-    linspace(color_neg(2), color_pos(2), numColors)', ...
-    linspace(color_neg(3), color_pos(3), numColors)'];
-
-colormap(cmap);
-cb = colorbar;
-yl = ylabel(cb,'Volume fraction','FontSize',10,'Rotation',270);
-
-q = quiver(X_grid, Y_grid, vfx_disc, vfy_disc, 'k');
-
-col_list = ["black", "red", "blue", "magenta"];
-
-x_plot = z_all_plot(:,1:n_agents);
-y_plot = z_all_plot(:,n_agents+1:2*n_agents);
-vx_plot = z_all_plot(:,2*n_agents+1:3*n_agents);
-vy_plot = z_all_plot(:,3*n_agents+1:4*n_agents);
-v_plot = sqrt(vx_plot.^2+vy_plot.^2);
-
-for i=1:n_agents
-    plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), "LineWidth", 1.25);
-    plot(s0(i), s0(i+n_agents), "or", "LineWidth", 1.25)
-end
-grid on
-ylim([-0.15 0.15])
-xlabel('x position (m)')
-ylabel('y position (m)')
-title('Cell kinetics model in bioreactor simulation flow field')
-
-
-%% Plotting time step size over time of simulation
-
-deltat = [0];
-for i=2:length(t_plot)
-    deltat(end+1) = t_plot(i) - t_plot(i-1);
-end
-
-figure
-plot(t_plot, deltat)
-grid on
-xlabel('time (s)')
-ylabel('time step size (s)')
-title('Time step size throughout the simulation')
-
-%% Plotting velocity over time of simulation
-% figure
-% for i=1:n_agents
-%     hold on
-%     plot(t_plot, v_plot(:, i))
-%     grid on
-%     xlabel('time (s)')
-%     ylabel('velocity (m/s)')
-% end
-
-%% Plotting distance between agents over time
-% dist_plot_1_3 = sqrt((x_plot(:, 3) - x_plot(:, 1)).^2 + (y_plot(:, 3) - y_plot(:, 1)).^2);
-% dist_plot_2_4 = sqrt((x_plot(:, 4) - x_plot(:, 2)).^2 + (y_plot(:, 4) - y_plot(:, 2)).^2);
-
-% figure
-% hold on
-% plot(t_plot, dist_plot_2_4, 'LineWidth',2)
-% yline(2*r_i(1))
-% grid on
-% xlabel('time (s)')
-% ylabel('particle distance (m)')
-% title('distance between agents 2 and 4 — with bonding')
-% 
-% figure
-% hold on
-% plot(t_plot, dist_plot_1_3, 'LineWidth',2)
-% yline(2*r_i(1))
-% grid on
-% xlabel('time (s)')
-% ylabel('particle distance (m)')
-% title('distance between agents 1 and 3 — with bonding')
-
 toc
+
+my_output = struct('X_grid', X_grid, 'Y_grid', Y_grid, ...
+    'vfx_disc', vfx_disc, 'vfy_disc', vfy_disc, 'z_all_plot', z_all_plot, ...
+    'n_agents', n_agents, 's0', s0, 'flow_data', flow_data, ...
+    't_plot', t_plot);
+
+end
