@@ -22,7 +22,7 @@ function my_output = cell_contact_sim_flowfield(position)
 %       flow_data   Imported flow data from the time_dependent_flow_data
 %                   script
 %       t_plot      Vector containing the time at each simulation step
-clear
+
 arguments
     position (1,1) string {mustBeMember(position, ["random", "random bonded", "manual"])}
 end
@@ -83,9 +83,7 @@ Bonded_pairs = zeros(n_agents, n_agents);
 if position == "random"
     x0 = l_wall + 0.1*(r_wall - l_wall) + 0.4*(r_wall - l_wall).*rand(n_agents, 1);
     y0 = floor + 0.1*(ceil - floor) + 0.3*(ceil - floor).*rand(n_agents, 1);
-
-    % Random bonded position setting
-elseif position == "random bonded"
+elseif position == "random bonded" % Random bonded position setting
     n_bonds = 3; % must be in [0, n_agents/2]
     n_unbonded = n_agents - 2*n_bonds;
     x01 = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_bonds, 1);

@@ -47,9 +47,6 @@ for i=3:height(data_files) % Ignoring first two files, '.' and '..'
     times(i-2) = time;
 end
 
-%snapshot1 = all_data(:,:,67); 
-%snapshot2 = all_data(:,:,4);
-
 % Dimensionalizing
 % Reference frames
 L_ref = 0.25; % m

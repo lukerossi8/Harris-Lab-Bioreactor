@@ -24,14 +24,14 @@ function my_output = cell_contact_sim_flowfield(position)
 %       t_plot      Vector containing the time at each simulation step
 
 arguments
-    position (1,1) string {mustBeMember(position, ["random", "random bonded", "manual"])}
+    position (1,1) string {mustBeMember(position, ["random", "random bonded", "manual"])} = "random"
 end
 
 tic
 
 % Defining time range
 tstart = 0;
-tstop = .1;
+tstop = .4;
 tspan = [tstart, tstop];
 
 % Defining fluid and gravitational constants
@@ -83,9 +83,7 @@ Bonded_pairs = zeros(n_agents, n_agents);
 if position == "random"
     x0 = l_wall + 0.1*(r_wall - l_wall) + 0.4*(r_wall - l_wall).*rand(n_agents, 1);
     y0 = floor + 0.1*(ceil - floor) + 0.3*(ceil - floor).*rand(n_agents, 1);
-
-    % Random bonded position setting
-elseif position == "random bonded"
+elseif position == "random bonded" % Random bonded position setting
     n_bonds = 3; % must be in [0, n_agents/2]
     n_unbonded = n_agents - 2*n_bonds;
     x01 = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_bonds, 1);
@@ -95,9 +93,7 @@ elseif position == "random bonded"
     y01 = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_bonds, 1);
     y0_unbonded = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_unbonded, 1);
     y0 = [y01;y01;y0_unbonded];
-
-    % Manual position setting
-else
+elseif position == "manual" % Manual position setting
     x0 = [0.276186511572733;0.047690676239594;0.338317326257966;0.154875577771002;0.065197951308746;0.248375556356238];
     y0 = [-0.040888748586254;-0.030997954552837;-0.119952986217875;-0.042110526808828;-0.064869017746440;-0.030904481486205];
 end
