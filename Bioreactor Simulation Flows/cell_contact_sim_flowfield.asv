@@ -1,10 +1,14 @@
-function my_output = cell_contact_sim_flowfield(position)
+function my_output = cell_contact_sim_flowfield(tstop, n_agents, position)
 % cell_contact_sim_flowfield models the motion and bonding of agents in a
 % flowfield
 % Syntax:
 %   cell_contact_sim_flowfield()
 % Inputs:
-%   None
+%   tstop       Double representing the length of the simulation (seconds)
+%   n_agents    Double representing the number of agents in the simulation
+%   position    Either a string in ["random", "random bonded"], or a matrix 
+%               of size [n_agents, 2] of doubles (column 1 = x vals, 
+%               column 2 = y vals)
 % Outputs
 %   my_output   Struct containing the following fields:
 %       X_grid      Matrix containing x position at each point in 
@@ -24,14 +28,15 @@ function my_output = cell_contact_sim_flowfield(position)
 %       t_plot      Vector containing the time at each simulation step
 
 arguments
-    position (1,1) string {mustBeMember(position, ["random", "random bonded", "manual"])}
+    tstop (1,1) double
+    n_agents (1,1) double
+    position {mustBeRandomRandomBondedOrPosMatrix(position, n_agents)}
 end
 
 tic
 
 % Defining time range
 tstart = 0;
-tstop = .1;
 tspan = [tstart, tstop];
 
 % Defining fluid and gravitational constants
@@ -69,7 +74,6 @@ l_wall = min(x_grid); % left x boundary
 r_wall = max(y_grid); % right x boundary
 
 % Defining agents - radius, mass, and density of each
-n_agents = 6; % number of agents modeled
 r_i = 90e-6 + zeros(n_agents, 1); % Agent radii, in m
 m = 2.79e-9 + zeros(n_agents, 1); % Agent mass, in kg
 rho_i = m ./ (4 / 3 * pi * r_i.^3); % Density in g/cm^3
@@ -80,23 +84,23 @@ Bonded_pairs = zeros(n_agents, n_agents);
 % Set positions of agents — randomly, randomly with bonds, or manually
 
 % Random position setting
-if position == "random"
-    x0 = l_wall + 0.1*(r_wall - l_wall) + 0.4*(r_wall - l_wall).*rand(n_agents, 1);
-    y0 = floor + 0.1*(ceil - floor) + 0.3*(ceil - floor).*rand(n_agents, 1);
-elseif position == "random bonded" % Random bonded position setting
-    n_bonds = 3; % must be in [0, n_agents/2]
-    n_unbonded = n_agents - 2*n_bonds;
-    x01 = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_bonds, 1);
-    x02 = x01 + 14e-5;
-    x0_unbonded = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_unbonded, 1);
-    x0 = [x01;x02;x0_unbonded];
-    y01 = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_bonds, 1);
-    y0_unbonded = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_unbonded, 1);
-    y0 = [y01;y01;y0_unbonded];
-
-    % Manual position setting
+if isa(position, "string")
+    if position == "random"
+        x0 = l_wall + 0.1*(r_wall - l_wall) + 0.4*(r_wall - l_wall).*rand(n_agents, 1);
+        y0 = floor + 0.1*(ceil - floor) + 0.3*(ceil - floor).*rand(n_agents, 1);
+    elseif position == "random bonded" % Random bonded position setting
+        n_bonds = 3; % must be in [0, n_agents/2]
+        n_unbonded = n_agents - 2*n_bonds;
+        x01 = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_bonds, 1);
+        x02 = x01 + 14e-5;
+        x0_unbonded = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_unbonded, 1);
+        x0 = [x01;x02;x0_unbonded];
+        y01 = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_bonds, 1);
+        y0_unbonded = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_unbonded, 1);
+        y0 = [y01;y01;y0_unbonded];
+    end
 else
-    x0 = [0.276186511572733;0.047690676239594;0.338317326257966;0.154875577771002;0.065197951308746;0.248375556356238];
+    x0 = position(:, 1);
     y0 = [-0.040888748586254;-0.030997954552837;-0.119952986217875;-0.042110526808828;-0.064869017746440;-0.030904481486205];
 end
 s0 = [x0; y0]; % Initial positions, m
@@ -306,4 +310,16 @@ my_output = struct('X_grid', X_grid, 'Y_grid', Y_grid, ...
     'n_agents', n_agents, 's0', s0, 'flow_data', flow_data, ...
     't_plot', t_plot);
 
+end
+
+function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
+eidType = 'mustBeRandomRandomBondedOrPosMatrix:notAllowedValue';
+msgType = 'Input must be a string in ["random", "random bonded"], or a matrix of size [n_agents, 2] column.';
+if isa(position, "string")
+    if ~ismember(position, ["random", "random bonded"])
+        error(eidType, msgType)
+    end
+elseif ~(size(position) == [n_agents, 2])
+    error(eidType, msgType)
+end
 end

@@ -1,9 +1,27 @@
-clearvars; clc;
+% Probably should put a function wrapper here too so that users can call
+% this from the command window with their own inputs, rather than having to
+% enter their inputs into this script (thus still needing to edit a script)
 
-pos = "random";
+function sim_flowfield_figure_maker(tstop, n_agents, position)
+% sim_flowfield_figure_maker creates visualizations of agent behavior in a
+% bioreactor environment, by calling the cell_contact_sim_flowfield
+% function
+% Syntax:
+%   sim_flowfield_figure_maker(tstop, n_agents, position)
+% Inputs:
+%   tstop       Double representing the length of the simulation (seconds)
+%   n_agents    Double representing the number of agents in the simulation
+%   position    Either a string in ["random", "random bonded"], or a matrix 
+%               of size [n_agents, 2] of doubles (column 1 = x vals, 
+%               column 2 = y vals)
+% Outputs
+%   Figures representing the trajectories of the agents with the background 
+%   vorticity, the trajectories with the background volume fraction, and 
+%   the timestep size over the course of the simulation.
 
 % Calling the simulator function
-my_output = cell_contact_sim_flowfield(pos);
+
+my_output = cell_contact_sim_flowfield(tstop, n_agents, position);
 
 % Defining the required variables as the relevant fields from the output
 % struct
