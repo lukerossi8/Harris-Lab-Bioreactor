@@ -28,9 +28,15 @@ function my_output = cell_contact_sim_flowfield(tstop, n_agents, position)
 %       t_plot      Vector containing the time at each simulation step
 
 arguments
-    tstop (1,1) double
-    n_agents (1,1) double
-    position {mustBeRandomRandomBondedOrPosMatrix(position, n_agents)}
+    tstop (1,1) double = 0.5;
+    n_agents (1,1) double = 6;
+    position {mustBeRandomRandomBondedOrPosMatrix(position, n_agents)} = ...
+        [0, -0.05;
+        -0.01, -0.06;
+        -0.02, -0.07;
+        -0.03, -0.08;
+        -0.04, -0.09;
+        -0.05, -0.10];
 end
 
 tic
@@ -99,7 +105,7 @@ if isa(position, "string")
         y0_unbonded = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_unbonded, 1);
         y0 = [y01;y01;y0_unbonded];
     end
-else
+else % For manual position setting
     x0 = position(:, 1);
     y0 = position(:, 2);
 end

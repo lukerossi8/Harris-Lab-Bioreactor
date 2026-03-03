@@ -19,6 +19,19 @@ function sim_flowfield_figure_maker(tstop, n_agents, position)
 %   vorticity, the trajectories with the background volume fraction, and 
 %   the timestep size over the course of the simulation.
 
+arguments
+    tstop (1,1) double = 0.5;
+    n_agents (1,1) double = 6;
+    position {mustBeRandomRandomBondedOrPosMatrix(position, n_agents)} = ...
+        [0, -0.05;
+        -0.01, -0.06;
+        -0.02, -0.07;
+        -0.03, -0.08;
+        -0.04, -0.09;
+        -0.05, -0.10];
+end
+
+
 % Calling the simulator function
 
 my_output = cell_contact_sim_flowfield(tstop, n_agents, position);
@@ -35,7 +48,34 @@ s0 = my_output.s0;
 flow_data = my_output.flow_data;
 t_plot = my_output.t_plot;
 
-%% Plot agent trajectories w/ background velocity & vorticity in bioreactor sim flow fields
+% Defining position and velocity data for all agents
+x_plot = z_all_plot(:,1:n_agents);
+y_plot = z_all_plot(:,n_agents+1:2*n_agents);
+vx_plot = z_all_plot(:,2*n_agents+1:3*n_agents);
+vy_plot = z_all_plot(:,3*n_agents+1:4*n_agents);
+v_plot = sqrt(vx_plot.^2+vy_plot.^2);
+
+% A list of colors to be used for plotting trajectories
+col_list = ["black", "red", "blue", "magenta"];
+
+%% Plot agent trajectories
+figure
+hold on
+rectangle('Position', [-0.5, -0.15, 1, 0.3], 'FaceColor',[0.55, 0.86, 0.92],...
+    'LineWidth',2)
+for i=1:n_agents
+    plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), "LineWidth", 1.25);
+    plot(s0(i), s0(i+n_agents), "or", "LineWidth", 1.25)
+end
+grid on
+xlabel('x position (m)')
+ylabel('y position (m)')
+xlim([-0.6 0.6])
+ylim([-0.2 0.2])
+title('Cell kinetics model in time-dependent bioreactor simulation flow field - cell trajectories')
+subtitle('simulation time: ' + string(tstop) + ' seconds — period time: 0.595 seconds')
+
+%% Plot agent trajectories w/ initial background velocity & vorticity
 figure
 hold on
 [curlz,cav] = curl(X_grid, Y_grid, vfx_disc, vfy_disc);
@@ -66,14 +106,6 @@ cb = colorbar;
 yl = ylabel(cb,'Vorticity','FontSize',10,'Rotation',270);
 
 q = quiver(X_grid, Y_grid, vfx_disc, vfy_disc, 'k');
-
-col_list = ["black", "red", "blue", "magenta"];
-
-x_plot = z_all_plot(:,1:n_agents);
-y_plot = z_all_plot(:,n_agents+1:2*n_agents);
-vx_plot = z_all_plot(:,2*n_agents+1:3*n_agents);
-vy_plot = z_all_plot(:,3*n_agents+1:4*n_agents);
-v_plot = sqrt(vx_plot.^2+vy_plot.^2);
 
 for i=1:n_agents
     plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), "LineWidth", 1.25);
@@ -109,14 +141,6 @@ cb = colorbar;
 yl = ylabel(cb,'Volume fraction','FontSize',10,'Rotation',270);
 
 q = quiver(X_grid, Y_grid, vfx_disc, vfy_disc, 'k');
-
-col_list = ["black", "red", "blue", "magenta"];
-
-x_plot = z_all_plot(:,1:n_agents);
-y_plot = z_all_plot(:,n_agents+1:2*n_agents);
-vx_plot = z_all_plot(:,2*n_agents+1:3*n_agents);
-vy_plot = z_all_plot(:,3*n_agents+1:4*n_agents);
-v_plot = sqrt(vx_plot.^2+vy_plot.^2);
 
 for i=1:n_agents
     plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), "LineWidth", 1.25);
@@ -174,3 +198,14 @@ title('Time step size throughout the simulation')
 % xlabel('time (s)')
 % ylabel('particle distance (m)')
 % title('distance between agents 1 and 3 — with bonding')
+
+function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
+eidType = 'mustBeRandomRandomBondedOrPosMatrix:notAllowedValue';
+msgType = 'Input must be a string in ["random", "random bonded"], or a matrix of size [n_agents, 2] column.';
+if isa(position, "string")
+    if ~ismember(position, ["random", "random bonded"])
+        error(eidType, msgType)
+    end
+elseif ~isequal(size(position), [n_agents, 2])
+    error(eidType, msgType)
+end
