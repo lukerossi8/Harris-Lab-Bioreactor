@@ -31,6 +31,7 @@ arguments
         -0.05, -0.10];
 end
 
+pos = "random";
 
 % Calling the simulator function
 
