@@ -1,6 +1,6 @@
 clearvars; clc;
 
-pos = "random";
+pos = "manual";
 
 % Calling the simulator function
 my_output = cell_contact_sim_flowfield(pos);

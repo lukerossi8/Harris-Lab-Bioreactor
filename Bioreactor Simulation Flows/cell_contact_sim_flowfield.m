@@ -109,87 +109,19 @@ z0 = [s0; v0];
 %% ode45 set up and call
 RelTol = 1e-6;
 AbsTol = 1e-9;
-options = odeset('Events', @(t, z) boundary(t, z, floor, ceil, l_wall, r_wall, n_agents), ...
-    'Refine', 100, ...
+options = odeset('Refine', 100, ...
     'RelTol', RelTol, ...
     'AbsTol', AbsTol);
 
-%options = odeset('Events', @(t, z) boundary(t, z, floor, ceil, l_wall, r_wall, n_agents), 'Refine', 100);
-
-% Would like to better understand the difference between these two options
-
 odeFun = @(t, z)eom(t, z, mu, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_i, n_agents, flow_data);
-[t, z_all] = ode45(odeFun, tspan, z0, options);
+[t_plot, z_all_plot] = ode45(odeFun, tspan, z0, options);
 
-t_plot = t; % storing vector with all values of t throughout the ode45 call
-z_all_plot = z_all; % storing vector with all values of z
+toc
 
-%% Model boundary interactions
-% Define boundary logic in the while loop. This is a fallback in case a
-% particle hits the boundary and ode45 stops early
-while t(end) < tstop
-    % z vector takes the form [x1; x2; x3;...; y1; y2; y3;...; vx1; vx2; vx3;...; vy1; vy2; vy3;...]
-    % Separate into vectors x0, y0, vx0, vy0
-    % Identify indices of positions that have crossed the boundaries
-    % Flip the corresponding velocities and adjust those positions to the
-    % boundary
-    z1 = z_all(end, :);
-    x1 = z1(1:n_agents)';
-    y1 = z1(n_agents+1:2*n_agents)';
-    vx1 = z1(2*n_agents+1:3*n_agents)';
-    vy1 = z1(3*n_agents+1:end)';
-
-    left = find(x1 <= l_wall);
-    right = find(x1 >= r_wall);
-    low = find(y1 <= floor);
-    high = find(y1 >= ceil);
-
-    % If any agent hits either wall, replace & reverse x velocity
-    if ~isempty(left)
-        x1(left) = l_wall;
-        vx1(left) = -vx1(left);
-    end
-
-    if ~isempty(right)
-        x1(right) = r_wall;
-        vx1(right) = -vx1(right);
-    end
-
-    % If any agent hits the floor or ceiling, replace & reverse y velocity
-    if ~isempty(low)
-        y1(low) = floor;
-        vy1(low) = -vy1(low);
-    end
-
-    if ~isempty(high)
-        y1(high) = ceil;
-        vy1(high) = -vy1(high);
-    end
-
-    z1 = [x1; y1; vx1; vy1]; % New initial state
-
-    % Reset time range to what's remaining
-    tspan = [t(end), tstop];
-
-    % Call ode45 with new adjusted conditions
-    [t, z_all] = ode45(odeFun, tspan, z1, options);
-
-    % Accumulate values of t, x, and y across all the calls
-    t_plot = [t_plot; t];
-    z_all_plot = [z_all_plot; z_all];
-end
-
-% Boundary interaction event function
-function [value, isTerminal, direction] = boundary(t, z, floor, ceil, l_wall, r_wall, n_agents)
-% z vector takes the form [x1; x2; x3;...; y1; y2; y3;...; vx1; vx2; vx3;...; vy1; vy2; vy3;...]
-
-x = z(1:n_agents);
-y = z(n_agents+1:2*n_agents);
-
-value = [(x - l_wall); (x - r_wall); (y - floor); (y - ceil)];
-isTerminal(value ~= 0) = 1;
-direction = 0;
-end
+my_output = struct('X_grid', X_grid, 'Y_grid', Y_grid, ...
+    'vfx_disc', vfx_disc, 'vfy_disc', vfy_disc, 'z_all_plot', z_all_plot, ...
+    'n_agents', n_agents, 's0', s0, 'flow_data', flow_data, ...
+    't_plot', t_plot);
 
 %% Numerical solution
 function dzdt = eom(t, z, mu, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_i, n_agents, flow_data)
@@ -204,19 +136,6 @@ vy = z(3*n_agents+1:end);      % y velocities
 
 % Compute periodic time
 t_eff = mod(t, times(end)); % effective time inside a single period
-
-% % Without background interpolation
-% % Find the last time <= t_eff
-% flow_counter = find(times <= t_eff, 1, 'last');
-% 
-% % Handle wrap-around case (t_eff < times(1))
-% if isempty(flow_counter)
-%     flow_counter = length(times);
-% end
-% 
-% % Load the corresponding flow field
-% vfx_vect = flow_data(:,3,flow_counter);
-% vfy_vect = flow_data(:,4,flow_counter);
 
 % With background interpolation
 % Find i such that times(i) <= t_eff < times(i+1)
@@ -237,12 +156,12 @@ alpha = (t_eff - t0) / (t1 - t0);
 vfx_vect = (1-alpha)*flow_data(:,3,i) + alpha*flow_data(:,3,i_next);
 vfy_vect = (1-alpha)*flow_data(:,4,i) + alpha*flow_data(:,4,i_next);
 
-vfx_disc = reshape(vfx_vect, 64, 64)';
-vfy_disc = reshape(vfy_vect, 64, 64)';
+vfx_disc_local = reshape(vfx_vect, 64, 64)';
+vfy_disc_local = reshape(vfy_vect, 64, 64)';
 
 % Interpolating to find background flow at the agent's position
-vfx = interp2(X_grid, Y_grid, vfx_disc, x, y, 'linear', 0);
-vfy = interp2(X_grid, Y_grid, vfy_disc, x, y, 'linear', 0);
+vfx_interp = interp2(X_grid, Y_grid, vfx_disc_local, x, y, 'linear', 0);
+vfy_interp = interp2(X_grid, Y_grid, vfy_disc_local, x, y, 'linear', 0);
 
 % Position derivatives
 dxdt = vx;
@@ -250,16 +169,34 @@ dydt = vy;
 
 % Gravity/buoyancy and drag forces in x and y dir
 Fgx = m .* gx .* (1 - rho_f ./ rho_i); % N
-Fdx = -(6 * pi * mu * r_i .* (vx - vfx)); % N
+Fdx = -(6 * pi * mu * r_i .* (vx - vfx_interp)); % N
 
 Fgy = m .* gy .* (1 - rho_f ./ rho_i); % N
-Fdy = -(6 * pi * mu * r_i .* (vy - vfy)); % N
+Fdy = -(6 * pi * mu * r_i .* (vy - vfy_interp)); % N
 
-% Matricies relating pairs of agents
-X = x - x'; % x displacement between pairs of agents
-Y = y - y'; % y displacement between pairs
-D = sqrt(X.^2 + Y.^2); % distance between pairs
-Theta = atan2(-Y, -X);
+% --- Wall Repulsion Forces (Exponential Potential) ---
+% F_wall = A * exp(-B * dist). This is conservative.
+% Superposition principle: F_wall_total = sum(F_wall_i)
+A_wall = 1e-4; % Amplitude of repulsion, N (tuned)
+B_wall = 1e5;  % Decay constant, 1/m (tuned for ~10 micron range)
+
+% Left wall (x = l_wall)
+F_wall_left = A_wall * exp(-B_wall * (x - l_wall));
+% Right wall (x = r_wall)
+F_wall_right = -A_wall * exp(-B_wall * (r_wall - x));
+% Floor (y = floor)
+F_wall_low = A_wall * exp(-B_wall * (y - floor));
+% Ceiling (y = ceil)
+F_wall_high = -A_wall * exp(-B_wall * (ceil - y));
+
+F_wall_x = F_wall_left + F_wall_right;
+F_wall_y = F_wall_low + F_wall_high;
+
+% --- Cell-Cell Bonding Forces (Restored Original Hysteresis Logic) ---
+X_dist = x - x'; % x displacement between pairs of agents
+Y_dist = y - y'; % y displacement between pairs
+D = sqrt(X_dist.^2 + Y_dist.^2); % distance between pairs
+Theta = atan2(-Y_dist, -X_dist);
 R = r_i + r_i'; % Sum of radii of pairs
 Delta_ij = D - R; % Degree of overlap or separation of pairs
 
@@ -269,7 +206,7 @@ Delta_c = R; % Bond formation threshold, m
 % to R, but in this context it is
 Delta_d = 1.4*Delta_c; % Bond breaking threshold, m
 
-% Updating Bonded_pairs matrix based on current timestep
+% Updating Bonded_pairs matrix (Hysteresis logic)
 Bonded_pairs(D <= Delta_c & Bonded_pairs == 0) = 1; % newly formed bonds
 Bonded_pairs(D > Delta_d & Bonded_pairs == 1) = 0; % newly broken bonds
 Bonded_pairs(logical(eye(size(Bonded_pairs)))) = 0; % Setting the diagonal to zero (representing the "pair" of each agent with itself)
@@ -287,8 +224,8 @@ net_bond_forces_x = sum(Bond_forces_x, 2);
 net_bond_forces_y = sum(Bond_forces_y, 2);
 
 % Velocity derivatives represented by sum of forces div by masses
-dvxdt = (Fgx + Fdx + net_bond_forces_x) ./ m;
-dvydt = (Fgy + Fdy + net_bond_forces_y) ./ m;
+dvxdt = (Fgx + Fdx + net_bond_forces_x + F_wall_x) ./ m;
+dvydt = (Fgy + Fdy + net_bond_forces_y + F_wall_y) ./ m;
 
 % Store the position and velocity derivatives
 dzdt(1:n_agents) = dxdt;
@@ -296,12 +233,5 @@ dzdt(n_agents+1:2*n_agents) = dydt;
 dzdt(2*n_agents+1:3*n_agents) = dvxdt;
 dzdt(3*n_agents+1:end) = dvydt;
 end
-
-toc
-
-my_output = struct('X_grid', X_grid, 'Y_grid', Y_grid, ...
-    'vfx_disc', vfx_disc, 'vfy_disc', vfy_disc, 'z_all_plot', z_all_plot, ...
-    'n_agents', n_agents, 's0', s0, 'flow_data', flow_data, ...
-    't_plot', t_plot);
 
 end
