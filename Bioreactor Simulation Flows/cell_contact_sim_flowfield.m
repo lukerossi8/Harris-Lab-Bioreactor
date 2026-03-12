@@ -277,8 +277,7 @@ Delta_ij = D - R; % Degree of overlap or separation of pairs
 
 % Bonding thresholds (for each pair)
 Delta_c = R; % Bond formation threshold, m
-% ^just leaving this because theoretically Delta_c doesn't have to be equal
-% to R, but in this context it is
+% Theoretically Delta_c doesn't have to equal R, but in this context it does
 Delta_d = 1.4*Delta_c; % Bond breaking threshold, m
 
 % Updating Bonded_pairs matrix based on current timestep
