@@ -31,8 +31,6 @@ arguments
         -0.05, -0.10];
 end
 
-pos = "random";
-
 % Calling the simulator function
 
 my_output = cell_contact_sim_flowfield(tstop, n_agents, position);
@@ -73,7 +71,7 @@ xlabel('x position (m)')
 ylabel('y position (m)')
 xlim([-0.6 0.6])
 ylim([-0.2 0.2])
-title('Cell trajectories in time-dependent bioreactor simulation flow field')
+title('Cell trajectories in time-dependent bioreactor simulation flow field - plain background')
 subtitle('simulation time: ' + string(tstop) + ' seconds — period time: 0.595 seconds')
 
 %% Plot agent trajectories w/ initial background velocity & vorticity
