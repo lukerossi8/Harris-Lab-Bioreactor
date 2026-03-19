@@ -128,6 +128,7 @@ c.EdgeColor = 'none';
 
 % Define three colors for the gradient
 [0.9290 0.6940 0.1250];   % Yellow for 1 vf
+color_pos = [0.9590 0.7240 0.1550];   % Yellow for positive vorticity
 color_neg = [1 1 1];   % White for 0 vf
 % Create a custom colormap with a smooth transition between these three colors
 numColors = 256;  % Number of colors in the colormap (higher resolution)
