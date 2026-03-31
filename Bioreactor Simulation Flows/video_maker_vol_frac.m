@@ -1,4 +1,4 @@
-function figure_maker_vol_frac(tstop, n_agents, position)
+function video_maker_vol_frac(tstop, n_agents, position)
 % figure_maker_vol_frac creates a video of agent trajectories in a
 % bioreactor environment with the volume fraction in the background, by
 % calling the cell_contact_sim_flowfield function
