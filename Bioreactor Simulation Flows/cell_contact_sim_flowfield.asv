@@ -46,8 +46,10 @@ tstart = 0;
 tspan = [tstart, tstop];
 
 % Defining fluid and gravitational constants
-mu = 10^-3; % Water dynamic viscosity at 20°C, in Pa*s
+mu_f = 10^-3; % Water dynamic viscosity at 20°C, in Pa*s
+mu_a = 1.813*10^-5; % Air dynamic viscosity at 20°C, in Pa*s
 rho_f = 1000; % kg/m^3
+rho_a = 1.204; % kg/m^3
 g = [0, -9.81]; % gravitational acceleration, m/s^2
 gx = g(1);
 gy = g(2);
@@ -125,7 +127,7 @@ options = odeset('Refine', 100, ...
     'RelTol', RelTol, ...
     'AbsTol', AbsTol);
 
-odeFun = @(t, z)eom(t, z, mu, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_i, n_agents, flow_data);
+odeFun = @(t, z)eom(t, z, mu_f, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_i, n_agents, flow_data);
 [t_plot, z_all_plot] = ode45(odeFun, tspan, z0, options);
 
 toc
@@ -136,7 +138,7 @@ my_output = struct('X_grid', X_grid, 'Y_grid', Y_grid, ...
     't_plot', t_plot, 'times', times);
 
 %% Numerical solution
-function dzdt = eom(t, z, mu, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_i, n_agents, flow_data)
+function dzdt = eom(t, z, mu_f, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_i, n_agents, flow_data)
 dzdt = zeros(4 * n_agents, 1);  % Initialize the output vector for all agents
 % z vector takes the form [x1; x2; x3;...; y1; y2; y3;...; vx1; vx2; vx3;...; vy1; vy2; vy3;...]
 
@@ -164,16 +166,20 @@ t1 = times(i_next);
 % fractional interpolation parameter
 alpha = (t_eff - t0) / (t1 - t0);
 
-% Interpolate flow vectors
+% Interpolate flow vectors & volume fraction
 vfx_vect = (1-alpha)*flow_data(:,3,i) + alpha*flow_data(:,3,i_next);
 vfy_vect = (1-alpha)*flow_data(:,4,i) + alpha*flow_data(:,4,i_next);
+vol_frac_vect = (1-alpha)*flow_data(:,5,i) + alpha*flow_data(:,5,i_next);
 
 vfx_disc_local = reshape(vfx_vect, 64, 64)';
 vfy_disc_local = reshape(vfy_vect, 64, 64)';
+vol_frac_local = reshape(vol_frac_vect, 64, 64)';
 
-% Interpolating to find background flow at the agent's position
+% Interpolating to find background flow & volume fraction at agents'
+% positions
 vfx_interp = interp2(X_grid, Y_grid, vfx_disc_local, x, y, 'linear', 0);
 vfy_interp = interp2(X_grid, Y_grid, vfy_disc_local, x, y, 'linear', 0);
+vol_frac_interp = interp2(X_grid, Y_grid, vol_frac)
 
 % Position derivatives
 dxdt = vx;
@@ -181,10 +187,10 @@ dydt = vy;
 
 % Gravity/buoyancy and drag forces in x and y dir
 Fgx = m .* gx .* (1 - rho_f ./ rho_i); % N
-Fdx = -(6 * pi * mu * r_i .* (vx - vfx_interp)); % N
+Fdx = -(6 * pi * mu_f * r_i .* (vx - vfx_interp)); % N
 
 Fgy = m .* gy .* (1 - rho_f ./ rho_i); % N
-Fdy = -(6 * pi * mu * r_i .* (vy - vfy_interp)); % N
+Fdy = -(6 * pi * mu_f * r_i .* (vy - vfy_interp)); % N
 
 % --- Wall Repulsion Forces (Exponential Potential) ---
 % F_wall = A * exp(-B * dist). This is conservative.
