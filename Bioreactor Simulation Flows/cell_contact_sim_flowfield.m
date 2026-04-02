@@ -243,18 +243,6 @@ dzdt(2*n_agents+1:3*n_agents) = dvxdt;
 dzdt(3*n_agents+1:end) = dvydt;
 
 
-% INJECTION START: Diagnostic Trap
-% Insert this directly above the final "end % End of eom" inside cell_contact_sim_flowfield.m
-if any(isnan(dzdt)) || any(abs(dzdt) > 1e10)
-    fprintf('\n--- ODE DIAGNOSTIC HALT ---\n');
-    fprintf('Time stalled: %f s\n', t);
-    fprintf('Max Acceleration: %e m/s^2\n', max(abs(dzdt(2*n_agents+1:end))));
-    fprintf('Min distance to left wall: %e m\n', min(x - l_wall));
-    fprintf('Min distance to floor: %e m\n', min(y - floor));
-    error('Derivatives diverged to infinity/NaN. Paste this console output.');
-end
-% INJECTION END
-
 end % End of eom
 
 end % end of cell_contact_sim_flowfield
