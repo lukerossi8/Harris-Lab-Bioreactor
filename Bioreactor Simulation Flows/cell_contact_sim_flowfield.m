@@ -127,7 +127,7 @@ options = odeset('Refine', 100, ...
     'AbsTol', AbsTol);
 
 odeFun = @(t, z)eom(t, z, mu, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_i, n_agents, flow_data);
-[t_plot, z_all_plot] = ode45(odeFun, tstart:(5*dt):tstop, z0, options);
+[t_plot, z_all_plot] = ode45(odeFun, tstart:(2*dt):tstop, z0, options);
 
 toc
 
