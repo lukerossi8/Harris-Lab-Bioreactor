@@ -57,6 +57,7 @@ sim_results = load("time_dependent_flow_data_out.mat");
 flow_data = sim_results.all_data;
 times = sim_results.times;
 times = times - times(1); % normalizing to start at 0
+dt = mean(diff(times));
 
 % Define the flow field points
 x_grid = flow_data(:,1,1);
@@ -126,7 +127,7 @@ options = odeset('Refine', 100, ...
     'AbsTol', AbsTol);
 
 odeFun = @(t, z)eom(t, z, mu, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_i, n_agents, flow_data);
-[t_plot, z_all_plot] = ode45(odeFun, tspan, z0, options);
+[t_plot, z_all_plot] = ode45(odeFun, tstart:(5*dt):tstop, z0, options);
 
 toc
 
@@ -186,20 +187,17 @@ Fdx = -(6 * pi * mu * r_i .* (vx - vfx_interp)); % N
 Fgy = m .* gy .* (1 - rho_f ./ rho_i); % N
 Fdy = -(6 * pi * mu * r_i .* (vy - vfy_interp)); % N
 
-% --- Wall Repulsion Forces (Exponential Potential) ---
-% F_wall = A * exp(-B * dist). This is conservative.
-% Superposition principle: F_wall_total = sum(F_wall_i)
-A_wall = 1e-4; % Amplitude of repulsion, N (tuned)
-B_wall = 1e5;  % Decay constant, 1/m (tuned for ~10 micron range)
 
-% Left wall (x = l_wall)
-F_wall_left = A_wall * exp(-B_wall * (x - l_wall));
-% Right wall (x = r_wall)
-F_wall_right = -A_wall * exp(-B_wall * (r_wall - x));
-% Floor (y = floor)
-F_wall_low = A_wall * exp(-B_wall * (y - floor));
-% Ceiling (y = ceil)
-F_wall_high = -A_wall * exp(-B_wall * (ceil - y));
+% --- Wall Repulsion Forces (Hybrid Soft/Hard Model) ---
+A_wall = 1e-4; % Base soft wall force at boundary (N)
+B_wall = 1e5;  % Decay constant for soft wall (1/m)
+K_wall = 1.0;  % Hookean restoring spring constant for boundary breach (N/m)
+
+% Calculate forces: Soft exponential (capped) + Hard linear spring (only active if breached)
+F_wall_left = A_wall * exp(-B_wall * max(0, x - l_wall)) + K_wall * max(0, l_wall - x);
+F_wall_right = -(A_wall * exp(-B_wall * max(0, r_wall - x)) + K_wall * max(0, x - r_wall));
+F_wall_low = A_wall * exp(-B_wall * max(0, y - floor)) + K_wall * max(0, floor - y);
+F_wall_high = -(A_wall * exp(-B_wall * max(0, ceil - y)) + K_wall * max(0, y - ceil));
 
 F_wall_x = F_wall_left + F_wall_right;
 F_wall_y = F_wall_low + F_wall_high;
@@ -243,6 +241,20 @@ dzdt(1:n_agents) = dxdt;
 dzdt(n_agents+1:2*n_agents) = dydt;
 dzdt(2*n_agents+1:3*n_agents) = dvxdt;
 dzdt(3*n_agents+1:end) = dvydt;
+
+
+% INJECTION START: Diagnostic Trap
+% Insert this directly above the final "end % End of eom" inside cell_contact_sim_flowfield.m
+if any(isnan(dzdt)) || any(abs(dzdt) > 1e10)
+    fprintf('\n--- ODE DIAGNOSTIC HALT ---\n');
+    fprintf('Time stalled: %f s\n', t);
+    fprintf('Max Acceleration: %e m/s^2\n', max(abs(dzdt(2*n_agents+1:end))));
+    fprintf('Min distance to left wall: %e m\n', min(x - l_wall));
+    fprintf('Min distance to floor: %e m\n', min(y - floor));
+    error('Derivatives diverged to infinity/NaN. Paste this console output.');
+end
+% INJECTION END
+
 end % End of eom
 
 end % end of cell_contact_sim_flowfield
