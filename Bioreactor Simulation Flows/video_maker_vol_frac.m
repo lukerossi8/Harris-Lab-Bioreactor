@@ -15,7 +15,7 @@ function video_maker_vol_frac(tstop, n_agents, position)
 %   simulation.
 
 arguments
-    tstop (1,1) double = 0.5;
+    tstop (1,1) double = 15;
     n_agents (1,1) double = 6;
     position {mustBeRandomRandomBondedOrPosMatrix(position, n_agents)} = ...
         [0, -0.05;
@@ -63,12 +63,11 @@ open(vid);
 
 % Creating the video loop
 fig = figure;
-step = 2000;
-for i=1:step:length(t_plot)
-    cla
-    hold on
-
-    t_eff = mod(t_plot(i), times(end)); % effective time inside a single period
+step = 1;
+for ii=1:step:length(t_plot)
+    
+    hold off;
+    t_eff = mod(t_plot(ii), times(end)); % effective time inside a single period
 
     % Find i such that times(i) <= t_eff < times(i+1)
     layer = find(times <= t_eff, 1, 'last');
@@ -76,6 +75,7 @@ for i=1:step:length(t_plot)
     vol_frac = flow_data(:,5, layer); % volume fraction data at current time
     vol_frac_grid = reshape(vol_frac, 64, 64)';
     c = pcolor(X_grid, Y_grid, vol_frac_grid);
+    hold on;
     c.FaceColor = 'interp';
     c.EdgeColor = 'none';
 
@@ -93,8 +93,8 @@ for i=1:step:length(t_plot)
     yl = ylabel(cb,'Volume fraction','FontSize',10,'Rotation',270);
     
     for j=1:n_agents
-        plot(x_plot(1:i,j), y_plot(1:i,j), 'color', col_list(mod(j, 4)+1), "LineWidth", 1.25);
-        plot(x_plot(i,j), y_plot(i,j), "or", "LineWidth", 1.25)
+        plot(x_plot(1:ii,j), y_plot(1:ii,j), 'color', col_list(mod(j, 4)+1), "LineWidth", 1.25);
+        plot(x_plot(ii,j), y_plot(ii,j), "or", "LineWidth", 1.25)
     end
     grid on
     xlabel('x position (m)')
@@ -102,11 +102,12 @@ for i=1:step:length(t_plot)
     xlim([-0.6 0.6])
     ylim([-0.2 0.2])
     title('Cell trajectories in time-dependent bioreactor simulation flow field - plain background')
-    subtitle('simulation time: ' + string(tstop) + ' seconds — period time: 0.595 seconds')
+    subtitle('time: ' + string(t_plot(ii)) + ' seconds — period time: 0.595 seconds')
 
     % Capture the frame
     frame = getframe(gcf);
     writeVideo(vid, frame);
+    
 end
 
 % Close video writer
