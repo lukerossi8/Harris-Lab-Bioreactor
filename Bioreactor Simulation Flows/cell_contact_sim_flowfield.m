@@ -131,12 +131,13 @@ options = odeset('Refine', 100, ...
 odeFun = @(t, z)eom(t, z, mu_f, mu_a, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_a, rho_i, n_agents, flow_data);
 [t_plot, z_all_plot] = ode45(odeFun, tstart:(2*dt):tstop, z0, options);
 
-toc
+elapsed_time = toc;
+disp(elapsed_time)
 
 my_output = struct('X_grid', X_grid, 'Y_grid', Y_grid, ...
     'vfx_disc', vfx_disc, 'vfy_disc', vfy_disc, 'z_all_plot', z_all_plot, ...
     'n_agents', n_agents, 's0', s0, 'flow_data', flow_data, ...
-    't_plot', t_plot, 'times', times);
+    't_plot', t_plot, 'times', times, 'runtime', elapsed_time);
 
 %% Numerical solution
 function dzdt = eom(t, z, mu_f, mu_a, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_a, rho_i, n_agents, flow_data)
