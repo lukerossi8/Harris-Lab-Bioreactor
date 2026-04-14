@@ -167,6 +167,15 @@ xlabel('time (s)')
 ylabel('time step size (s)')
 title('Time step size throughout the simulation')
 
+%% Plotting histogram of average velocities
+v_avg_plot = mean(v_plot); % Average speed of each particle, m/s
+figure
+histogram(v_avg_plot, 20)
+xlabel('velocity (m/s)')
+ylabel('number of particles')
+title('Average velocity distribution')
+subtitle(append('simulation time: ', num2str(tstop), ' s     total agents: ', num2str(n_agents)))
+
 %% Plotting velocity over time of simulation
 % figure
 % for i=1:n_agents
@@ -198,6 +207,7 @@ title('Time step size throughout the simulation')
 % xlabel('time (s)')
 % ylabel('particle distance (m)')
 % title('distance between agents 1 and 3 — with bonding')
+end
 
 function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
 eidType = 'mustBeRandomRandomBondedOrPosMatrix:notAllowedValue';
@@ -208,4 +218,5 @@ if isa(position, "string")
     end
 elseif ~isequal(size(position), [n_agents, 2])
     error(eidType, msgType)
+end
 end
