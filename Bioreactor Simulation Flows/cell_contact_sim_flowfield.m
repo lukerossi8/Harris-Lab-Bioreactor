@@ -92,13 +92,13 @@ Bonded_pairs = zeros(n_agents, n_agents);
 
 % Set positions of agents — randomly, randomly with bonds, or manually
 
-% Random position setting
+% Position setting
 if isa(position, "string")
     if position == "random"
         x0 = l_wall + 0.35*(r_wall - l_wall) + 0.3*(r_wall - l_wall).*rand(n_agents, 1);
         y0 = floor + 0.05*(ceil - floor) + 0.15*(ceil - floor).*rand(n_agents, 1);
     elseif position == "random bonded" % Random bonded position setting
-        n_bonds = 3; % must be in [0, n_agents/2]
+        n_bonds = floor(n_agents/2);
         n_unbonded = n_agents - 2*n_bonds;
         x01 = l_wall + 0.1*(r_wall - l_wall) + 0.4*(r_wall - l_wall).*rand(n_bonds, 1);
         x02 = x01 + 14e-5;
