@@ -82,12 +82,12 @@ Where $\theta$ is given by equation (5):
 Where:
 - A is the rocking amplitude of $7^{\circ}$;
 - $t_{eff}$ is the effective time, meaning the simulated time modded by the period; and
-- $T$ is the period of ~$0.5953$ seconds.
+- $T$ is the period of ~ $0.5953$ seconds.
 
 ### Drag equation
 The drag force is based upon Stokes' flow past a sphere. It is implemented using equation (6):
 
-6. $\vec{F_d} = -6\pi \mu_f r_c \vec{v_{rel}}$
+6. $\vec{F_d} = -6\pi \mu_{local} r_c \vec{v_{rel}}$
 
 Where:
 - $\mu_{local}$ is the local density of the background fluid;
@@ -100,7 +100,7 @@ When cells come into contact with one another, they bond together. For bonded pa
 7. $|\vec{F_{bond}}| = K_{ij} \delta_{ij} \tanh(s_{ij}|\delta_{ij}|)$
 
 Where:
-- $K_{ij}$ is the bond spring constant of $1*10^{-3}$ Nm;
+- $K_{ij}$ is the bond spring constant of $10^{-3}$ Nm;
 - $\delta_{ij}$ is the overlap of the two cells — see equation (8); and
 - $s_{ij}$ is the bond stiffness parameter set at a value of $0.2$.
 - To find the x and y components, $|\vec{F_{bond}}|$ is multiplied by $\cos{\theta_b}$ and $\sin{\theta_b}$, respectively, where $\theta_b$ is the angle between the two bonded cells.
@@ -111,7 +111,7 @@ The overlap of the two bonded cells, $\delta_{ij}$, is given by equation (8):
 
 Where $D_{ij}$ is the distance between the centers of the two cells, and $(R_i + R_j)$ is the sum of the radii of the cells.
 
-The cell bonding equation is selectively applied to pairs of cells depending on whether an active bond exists between them. A bond is formed between cells when their overlap $D_{ij}$ falls below 0, meaning they have come into contact. This is modulated by the parameter $\delta_c$, set equal to $(R_i + R_j)$. Once a bond forms, it remains active until the cells move far enough apart to break the bond. This is modulated by the parameter $\delta_d$, set equal to $1.4*\delta_c$. A matrix tracks the bonded pairs of cells throughout the simulation.
+The cell bonding equation is selectively applied to pairs of cells depending on whether an active bond exists between them. A bond is formed between cells when their overlap $D_{ij}$ falls below 0, meaning they have come into contact. This is modulated by the parameter $\delta_c$, set equal to $(R_i + R_j)$. Once a bond forms, it remains active until the cells move far enough apart to break the bond. This is modulated by the parameter $\delta_d$, set equal to $1.4\delta_c$. A matrix tracks the bonded pairs of cells throughout the simulation.
 
 ### Boundary repulsion equations
 Cells are kept within the bounds of the simulation, i.e. the walls of the bioreactor, by a repulsive force active at each wall of the bioreactor. The force is formulated slightly differently for each wall, as shown in equations (9)–(12):
@@ -122,7 +122,7 @@ Cells are kept within the bounds of the simulation, i.e. the walls of the biorea
 12. $F_{wall-high} = -A_{wall}e^{-B_{wall}(c-y)}+K_{wall}(y-c)$
 
 Where:
-- $A_{wall}$ is the base soft wall force at the boundary, with a value of $1*10^{-4}$ N;
+- $A_{wall}$ is the base soft wall force at the boundary, with a value of $10^{-4}$ N;
 - $B_{wall}$ is the decay constant of $10^5$ 1/m;
 - $K_{wall}$ is the spring constant of $1.0$ N/m; and
 - $l_{wall}$, $r_{wall}$, $f$, and $c$ are the one-dimensional coordinates of the left wall ($-0.15$ m), right wall ($0.15$ m), floor ($-0.05$ m), and ceiling ($0.05$ m), respectively, of the bioreactor.
