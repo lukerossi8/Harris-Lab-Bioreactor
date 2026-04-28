@@ -77,7 +77,7 @@ Because the bioreactor environment is rotating, the gravity vector must evolve i
 
 Where $\theta$ is given by equation (5):
 
-5. $\theta = A\sin(\frac{2*\pi*t_{eff}}{T})$;
+5. $\theta = A\sin(\frac{2\pi t_{eff}}{T})$;
 
 Where:
 - A is the rocking amplitude of $7^{\circ}$;
@@ -87,7 +87,7 @@ Where:
 ### Drag equation
 The drag force is based upon Stokes' flow past a sphere. It is implemented using equation (6):
 
-6. $\vec{F_d} = -6pi*\mu_f*r_c*\vec{v_{rel}}$
+6. $\vec{F_d} = -6\pi \mu_f r_c \vec{v_{rel}}$
 
 Where:
 - $\mu_{local}$ is the local density of the background fluid;
@@ -97,7 +97,7 @@ Where:
 ### Cell bonding equations
 When cells come into contact with one another, they bond together. For bonded pairs of cells, a bonding force is applied between them according to equation (7):
 
-7. $|\vec{F_{bond}}| = K_{ij} * \delta_{ij}*\tanh(s_{ij}|\delta_{ij}|)$
+7. $|\vec{F_{bond}}| = K_{ij} \delta_{ij} \tanh(s_{ij}|\delta_{ij}|)$
 
 Where:
 - $K_{ij}$ is the bond spring constant of $1*10^{-3}$ Nm;
