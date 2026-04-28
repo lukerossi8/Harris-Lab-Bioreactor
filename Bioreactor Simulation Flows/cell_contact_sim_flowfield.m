@@ -26,6 +26,13 @@ function my_output = cell_contact_sim_flowfield(tstop, n_agents, position)
 %       flow_data   Imported flow data from the time_dependent_flow_data
 %                   script
 %       t_plot      Vector containing the time at each simulation step
+%       times       Vector containing times associated with each background
+%                   flow snapshot
+%       runtime     Double containing the elapsed time to run the
+%                   simulation
+%       theta       Vector containing rocking angle at selected timesteps
+%       g_plot      Matrix containing x and y components of gravity vector
+%                   at selected timesteps
 
 arguments
     tstop (1,1) double = 0.5;
@@ -50,9 +57,6 @@ mu_f = 10^-3; % Water dynamic viscosity at 20°C, in Pa*s
 mu_a = 1.813*10^-5; % Air dynamic viscosity at 20°C, in Pa*s
 rho_f = 1000; % kg/m^3
 rho_a = 1.204; % kg/m^3
-g = [0, -9.81]; % gravitational acceleration, m/s^2
-gx = g(1);
-gy = g(2);
 
 % Loading the simulation results, separating into flow data and time steps
 sim_results = load("time_dependent_flow_data_out.mat");
@@ -60,6 +64,10 @@ flow_data = sim_results.all_data;
 times = sim_results.times;
 times = times - times(1); % normalizing to start at 0
 dt = mean(diff(times));
+
+% Defining rocking parameters
+amp = 7*pi/180; % amplitutde, in radians
+period = times(end); % rocking period, in seconds
 
 % Define the flow field points
 x_grid = flow_data(:,1,1);
@@ -83,9 +91,9 @@ l_wall = min(x_grid); % left x boundary
 r_wall = max(y_grid); % right x boundary
 
 % Defining agents - radius, mass, and density of each
-r_i = 90e-6 + zeros(n_agents, 1); % Agent radii, in m
+r_c = 90e-6 + zeros(n_agents, 1); % Agent radii, in m
 m = 2.79e-9 + zeros(n_agents, 1); % Agent mass, in kg
-rho_i = m ./ (4 / 3 * pi * r_i.^3); % Density in g/cm^3
+rho_c = m ./ (4 / 3 * pi * r_c.^3); % Agent density in g/cm^3
 
 % Initialize Boolean matrix representing which pairs of agents are bonded
 Bonded_pairs = zeros(n_agents, n_agents);
@@ -128,19 +136,23 @@ options = odeset('Refine', 100, ...
     'RelTol', RelTol, ...
     'AbsTol', AbsTol);
 
-odeFun = @(t, z)eom(t, z, mu_f, mu_a, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_a, rho_i, n_agents, flow_data);
+odeFun = @(t, z)eom(t, z, mu_f, mu_a, r_c, X_grid, Y_grid, m, amp, period, rho_f, rho_a, rho_c, n_agents, flow_data);
 [t_plot, z_all_plot] = ode45(odeFun, tstart:(2*dt):tstop, z0, options);
 
 elapsed_time = toc;
 disp(elapsed_time)
 
+theta = amp*sin(2*pi.*t_plot/period); % angular velocity
+g_plot = [-9.81*sin(theta), -9.81*cos(theta)];
+
 my_output = struct('X_grid', X_grid, 'Y_grid', Y_grid, ...
     'vfx_disc', vfx_disc, 'vfy_disc', vfy_disc, 'z_all_plot', z_all_plot, ...
     'n_agents', n_agents, 's0', s0, 'flow_data', flow_data, ...
-    't_plot', t_plot, 'times', times, 'runtime', elapsed_time);
+    't_plot', t_plot, 'times', times, 'runtime', elapsed_time, 'theta', theta, ...
+    'g_plot', g_plot);
 
 %% Numerical solution
-function dzdt = eom(t, z, mu_f, mu_a, r_i, X_grid, Y_grid, m, gx, gy, rho_f, rho_a, rho_i, n_agents, flow_data)
+function dzdt = eom(t, z, mu_f, mu_a, r_c, X_grid, Y_grid, m, amp, period, rho_f, rho_a, rho_c, n_agents, flow_data)
 dzdt = zeros(4 * n_agents, 1);  % Initialize the output vector for all agents
 % z vector takes the form [x1; x2; x3;...; y1; y2; y3;...; vx1; vx2; vx3;...; vy1; vy2; vy3;...]
 
@@ -151,7 +163,13 @@ vx = z(2*n_agents+1:3*n_agents);  % x velocities
 vy = z(3*n_agents+1:end);      % y velocities
 
 % Compute periodic time
-t_eff = mod(t, times(end)); % effective time inside a single period
+t_eff = mod(t, period); % effective time inside a single period
+
+% Compute instantaneous gravity components
+theta_rock = amp*sin(2*pi*t_eff/period); % angular velocity
+g = [9.81*sin(theta_rock); -9.81*cos(theta_rock)];
+gx = g(1);
+gy = g(2);
 
 % With background interpolation
 % Find i such that times(i) <= t_eff < times(i+1)
@@ -191,12 +209,13 @@ rho_local = rho_f.*vol_frac_interp + rho_a.*(1-vol_frac_interp);
 dxdt = vx;
 dydt = vy;
 
-% Gravity/buoyancy and drag forces in x and y dir
-Fgx = m .* gx .* (1 - rho_local ./ rho_i); % N
-Fdx = -(6 * pi * mu_local .* r_i .* (vx - vfx_interp)); % N
+% Gravity/buoyancy force - x and y components
+Fgx = m .* gx .* (1 - rho_local ./ rho_c); % N
+Fgy = m .* gy .* (1 - rho_local ./ rho_c); % N
 
-Fgy = m .* gy .* (1 - rho_local ./ rho_i); % N
-Fdy = -(6 * pi * mu_local .* r_i .* (vy - vfy_interp)); % N
+% Drag force - x and y components
+Fdx = -(6 * pi * mu_local .* r_c .* (vx - vfx_interp)); % N
+Fdy = -(6 * pi * mu_local .* r_c .* (vy - vfy_interp)); % N
 
 
 % --- Wall Repulsion Forces (Hybrid Soft/Hard Model) ---
@@ -217,8 +236,8 @@ F_wall_y = F_wall_low + F_wall_high;
 X_dist = x - x'; % x displacement between pairs of agents
 Y_dist = y - y'; % y displacement between pairs
 D = sqrt(X_dist.^2 + Y_dist.^2); % distance between pairs
-Theta = atan2(-Y_dist, -X_dist);
-R = r_i + r_i'; % Sum of radii of pairs
+Theta_bond = atan2(-Y_dist, -X_dist);
+R = r_c + r_c'; % Sum of radii of pairs
 Delta_ij = D - R; % Degree of overlap or separation of pairs
 
 % Bonding thresholds (for each pair)
@@ -234,10 +253,10 @@ Bonded_pairs(logical(eye(size(Bonded_pairs)))) = 0; % Setting the diagonal to ze
 % Solve bond force magnitude for each pair of agents
 Bond_forces = zeros(n_agents, n_agents);
 K_ij = 1e-3; % Spring constant, N/m (SA)
-s_ij = 0.2; % Bond sensitivity (SA)
-Bond_forces(Bonded_pairs == 1) = K_ij * Delta_ij(Bonded_pairs == 1) .* tanh(s_ij./abs(Delta_ij(Bonded_pairs == 1)));
-Bond_forces_x = Bond_forces .* cos(Theta);
-Bond_forces_y = Bond_forces .* sin(Theta);
+s_ij = 0.2; % Bond stiffness parameter (SA)
+Bond_forces(Bonded_pairs == 1) = K_ij * Delta_ij(Bonded_pairs == 1) .* tanh(s_ij.*abs(Delta_ij(Bonded_pairs == 1)));
+Bond_forces_x = Bond_forces .* cos(Theta_bond);
+Bond_forces_y = Bond_forces .* sin(Theta_bond);
 
 % Loop through each pair in bonded_pairs, calculating force b/w them
 net_bond_forces_x = sum(Bond_forces_x, 2);
