@@ -55,7 +55,7 @@ The simulation solves the equation of motion for each cell as it moves through t
 ### Overall equation of motion
 Equation (1) defines the forces experienced by each cell and modeled in this simulation.
 
-1. $dvdt = \vec{F_g} + \vec{F_d} + ∑\vec{F_{bond}} + \vec{F_{boundary}}$
+1. $\frac{d\vec{v}}{dt} = \vec{F_g} + \vec{F_d} + ∑\vec{F_{bond}} + \vec{F_{boundary}}$
 
 Note that in the code base, the above equation, as well as the following equations for each force, are broken into their $x$ and $y$ components. For simplicity, here, they are presented in vector form. In the following sub-sections, each term in the above equation is explained.
 
