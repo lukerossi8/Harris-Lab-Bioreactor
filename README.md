@@ -72,8 +72,8 @@ Where:
 
 Because the bioreactor environment is rotating, the gravity vector must evolve in time to reflect this. The gravity vector's components, $g_x$ and $g_y$, are modeled by equations (3) and (4), respectively:
 
-1. $g_x = 9.81\sin(\theta)$
-2. $g_y = -9.81\cos(\theta)$
+3. $g_x = 9.81\sin(\theta)$
+4. $g_y = -9.81\cos(\theta)$
 
 Where $\theta$ is given by equation (5):
 
