@@ -2,7 +2,7 @@
 This repository contains a collection of MATLAB functions that model cell dynamics in a rocking bioreactor environment. It models cell motion in a periodic background flow field based on prior CFD simulation data. It also models bonding interactions between cells. Users can customize the length of the simulation, the number of cells, and the cells' initial positions.
 
 ## Overview
-Cell motion is modeled by implementing four forces on each cell: Gravity/buoyancy, drag, a boundary interactive (repulsion) force, and a cell bonding force. Using these forces and a periodic fluid flow field imported from previous simulation data, the repository is able to compute each cell's position throughout the simulation. This data can be used to plot graphs and videos of the cells' trajectories. It can also be used to evaluate the shear stress experienced by the cells throughout the life of the simulation.
+Cell motion is modeled by implementing four forces on each cell: Gravity/buoyancy, drag, a boundary interactive (repulsion) force, and a cell bonding force. Using these forces and a periodic fluid flow field imported from previous simulation data, this code base is able to compute each cell's position throughout the simulation. This data can be used to plot graphs and videos of the cells' trajectories. It can also be used to evaluate the shear stress experienced by the cells throughout the life of the simulation.
 
 ## Background
  Rocking bioreactors are a promising candidate in  cultivated meat bioprocess optimization. They impart relatively low shear stresses on cells, along with being disposable and cost-effective. 
@@ -24,7 +24,7 @@ Now, let's model a more complex scenario. This time, we'll model 100 cells, rand
 Now that you've run a few simulations, you can create new ones by varying the parameters in the figure maker and/or the video maker, calling either one or both as best suits your needs. For more information on the parameters that can be changed to create unique simulations, see the "Parameters" sub-section of the "Using the repository" section.
 
 ## Using the repository
-### Files
+### File Structure
 ### Parameters 
 You can modify three parameters in these simulations: the length of the simulation (`tstop`), the number of cells in the simulation (`n_agents`), and the initial positions of the cells (`position`). So, the syntax for calling either the figure maker is `sim_flowfield_figure_maker(tstop, n_agents, position)`, and for the video maker, it's the same: `vol_frac_video_maker(tstop, n_agents, position)`.
 
@@ -45,7 +45,9 @@ Let's talk about each parameter.
         -0.04, -0.09;
         -0.05, -0.10];`
 
-### Using your own flow data
+### Using your own background flow data
+
+At this time, the code base is not well-structured to handle different fluid flow fields, such as ones inputted by a user from their own fluid simulations. I would welcome improvements to the code base that allow for this functionality.
 
 ## Interpreting the results
 
@@ -55,9 +57,11 @@ The simulation solves the equation of motion for each cell as it moves through t
 ### Overall equation of motion
 Equation (1) defines the forces experienced by each cell and modeled in this simulation.
 
-1. $dvdt = \vec{F_g} + \vec{F_d} + ∑\vec{F_{bond}} + \vec{F_{boundary}}$
+1. $dvdt = \frac{\vec{F_g} + \vec{F_d} + ∑\vec{F_{bond}} + \vec{F_{boundary}} - \vec{F_{inertial}}}{m_c}$
 
-Note that in the code base, the above equation, as well as the following equations for each force, are broken into their $x$ and $y$ components. For simplicity, here, they are presented in vector form. In the following sub-sections, each term in the above equation is explained.
+Where $m_c$ is the mass of the cell, and each $\vec{F}$ term in the numerator is elaborated in the following sub-sections.
+
+Note that in the code base, the above equation and the following equations for each force are broken into their $x$ and $y$ components. For simplicity, here, they are usually presented in vector form.
 
 ### Gravity and buoyancy equations
 $\vec{F_g}$ is the force due to gravity and buoyancy, modeled by equation (2):
@@ -77,12 +81,12 @@ Because the bioreactor environment is rotating, the gravity vector must evolve i
 
 Where $\theta$ is given by equation (5):
 
-5. $\theta = A\sin(\frac{2\pi t_{eff}}{T})$;
+5. $\theta = \theta_{max}\sin(\omega t_{eff}) = \theta_{max}\sin(\frac{2\pi t_{eff}}{T})$;
 
 Where:
-- A is the rocking amplitude of $7^{\circ}$;
+- $\theta_{max}$ is the rocking amplitude of $7^{\circ}$;
 - $t_{eff}$ is the effective time, meaning the simulated time modded by the period; and
-- $T$ is the period of ~$0.5953$ seconds.
+- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~$0.5953$ seconds.
 
 ### Drag equation
 The drag force is based upon Stokes' flow past a sphere. It is implemented using equation (6):
@@ -92,7 +96,7 @@ The drag force is based upon Stokes' flow past a sphere. It is implemented using
 Where:
 - $\mu_{local}$ is the local density of the background fluid;
 - $r_c$ is the radius of the cell; and
-- $\vec{v_{rel}}$ is the relative velocity of the cell to the background fluid, $\vec{v_{rel}} = \vec{v_{cell}} - \vec{v_{fluid}}$.
+- $\vec{v_{rel}}$ is the relative velocity of the cell to the background fluid, $\vec{v_{rel}} = \vec{v_{cell}} - \vec{v_{fluid}}$ (both in the rotational reference frame).
 
 ### Cell bonding equations
 When cells come into contact with one another, they bond together. For bonded pairs of cells, a bonding force is applied between them according to equation (7):
@@ -129,4 +133,34 @@ Where:
 
 The forces are modulated so as to only take effect when an agent breaches one of the boundaries.
 
+### Inertial terms
+The simulation takes place in a non-inertial reference frame, so terms must be added to the equation of motion to account for fictitious forces experienced by the cells. These terms are taken from equation (13):
+
+13. $\vec{F_{inertial}} = 2\vec{\Omega}\times\vec{v_c} + \dot{\vec{\Omega}}\times\vec{x_c} + \vec{\Omega}\times(\vec{\Omega}\times\vec{x_c})$
+
+Where:
+- The first term represents the Coriolis acceleration;
+- The second term represents the angular acceleration;
+- The last term represents the centrifugal acceleration;
+- $\vec{\Omega}$ is the rotational velocity of the bioreactor, given by $\vec{\Omega} = \omega\cos{(\omega t_{eff})}\theta_{max}\hat{z}$ ;
+- $\vec{v_c}$ is the cell's velocity in the rotational frame; and
+- $\vec{x_c}$ is the cell's position in the bioreactor.
+
+Expanding equation (13) gives equations (14) and (15), below:
+
+14. $F_{inertial,x} = -2\omega\theta_{max}\cos{(\omega t_{eff})}v_y + \omega^2\theta_{max}\sin{(\omega t_{eff})}y - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}x$
+15. $F_{inertial,y} = 2\omega\theta_{max}\cos{(\omega t_{eff})}v_x - \omega^2\theta_{max}\sin{(\omega t_{eff})}x - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}y$
+
+Where:
+- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~$0.5953$ seconds;
+- $\theta_{max}$ is the rocking amplitude of $7^{\circ}$;
+- $t_{eff}$ is the effective time, meaning the simulated time modded by the period;
+- $v_x$ and $v_y$ are the x and y components, respectively, of the cell's velocity in the inertial reference frame; and
+- $x$ and $y$ are the x and y positions, respectively, of the cell in the bioreactor.
+
+## Acknowledgements
+  Simulation data and some equations were drawn from the results of Kim et al. (2025)'s work on computational fluid modeling of rocking bioreactors. Many other equations were borrowed from Cantarero-Rivera et al. (2024)'s work on computational modeling of cultivated meat bioprocess in a stirred-tank bioreactor. I was advised on this project by Dr. Daniel Harris, Dr. Radu Cimpeanu, Dr. Minki Kim, and Elvis Aguero.
+
 ## Contributing
+
+## License
