@@ -25,6 +25,8 @@ Now that you've run a few simulations, you can create new ones by varying the pa
 
 ## Using the repository
 ### File Structure
+
+
 ### Parameters 
 You can modify three parameters in these simulations: the length of the simulation (`tstop`), the number of cells in the simulation (`n_agents`), and the initial positions of the cells (`position`). So, the syntax for calling either the figure maker is `sim_flowfield_figure_maker(tstop, n_agents, position)`, and for the video maker, it's the same: `vol_frac_video_maker(tstop, n_agents, position)`.
 
