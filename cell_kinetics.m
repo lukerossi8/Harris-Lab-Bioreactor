@@ -1,8 +1,7 @@
-function my_output = cell_contact_sim_flowfield(tstop, n_agents, position)
-% cell_contact_sim_flowfield models the motion and bonding of agents in a
-% flowfield
+function my_output = cell_kinetics(tstop, n_agents, position)
+% cell_kinetics models the motion and bonding of agents in a flow field
 % Syntax:
-%   cell_contact_sim_flowfield(tstop, n_agents, position)
+%   cell_kinetics(tstop, n_agents, position)
 % Inputs:
 %   tstop       Double representing the length of the simulation (seconds)
 %   n_agents    Double representing the number of agents in the simulation
@@ -281,7 +280,7 @@ dzdt(3*n_agents+1:end) = dvydt;
 
 end % End of eom
 
-end % end of cell_contact_sim_flowfield
+end % end of cell_kinetics
 
 function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
 eidType = 'mustBeRandomRandomBondedOrPosMatrix:notAllowedValue';

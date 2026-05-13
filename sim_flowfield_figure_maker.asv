@@ -4,8 +4,7 @@
 
 function sim_flowfield_figure_maker(tstop, n_agents, position)
 % sim_flowfield_figure_maker creates visualizations of agent behavior in a
-% bioreactor environment, by calling the cell_contact_sim_flowfield
-% function
+% bioreactor environment, by calling the cell_kinetics function
 % Syntax:
 %   sim_flowfield_figure_maker(tstop, n_agents, position)
 % Inputs:

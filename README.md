@@ -18,12 +18,12 @@ This repository was created using MATLAB R2024b.
 
 ### Preparing to run a simulation
 ### Creating a basic simulation
-Let's start by modeling a simple case — the repository's default simulation — to ensure everything is working smoothly. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `sim_flowfield_figure_maker()` in your command window or terminal. This will produce a figure of the particle trajectories, as well as plots of the cell velocities over time and the shear stress experienced by each cell over time.
+Let's start by modeling a simple case — the repository's default simulation — to ensure everything is working smoothly. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `cell_kinetics_fig_maker()` in your command window or terminal. This will produce a figure of the particle trajectories, as well as plots of the cell velocities over time and the shear stress experienced by each cell over time.
 
-To generate a video of the same default simulation, call `video_maker_vol_frac()` in your command window or terminal. This will produce a video of the cells moving through the bioreactor environment.
+To generate a video of the same default simulation, call `cell_kinetics_vid_maker()` in your command window or terminal. This will produce a video of the cells moving through the bioreactor environment.
 
 ### A more complex simulation
-Now, let's model a more complex scenario. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `sim_flowfield_figure_maker(10, 100, 'random')` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. To generate the video of this simulation, call `video_maker_vol_frac()` in your command window or terminal. 
+Now, let's model a more complex scenario. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, 'random')` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. To generate the video of this simulation, call `cell_kinetics_vid_maker()` in your command window or terminal. 
 
 ### Creating your own simulations
 Now that you've run a few simulations, you can create new ones by varying the parameters in the figure maker and/or the video maker, calling either one or both as best suits your needs. For more information on the parameters that can be changed to create unique simulations, see the "Parameters" sub-section of the "Using the repository" section.
@@ -31,8 +31,18 @@ Now that you've run a few simulations, you can create new ones by varying the pa
 ## Using the repository
 ### File Structure
 
+```
+.                        
+├── cell_kinetics.m                             # 
+├── cell_kinetics_fig_maker.m                   # 
+├── cell_kinetics_vid_maker.m                   # 
+├── time_dependent_flow_data.m                  # 
+├── time_dependent_flow_data_out.mat.           # 
+├── Bioreactor_data_7deg_20rpm_lv6_onecycle     # 
+```
+
 ### Parameters 
-You can modify three parameters in these simulations: the length of the simulation (`tstop`), the number of cells in the simulation (`n_agents`), and the initial positions of the cells (`position`). So, the syntax for calling either the figure maker is `sim_flowfield_figure_maker(tstop, n_agents, position)`, and for the video maker, it's the same: `video_maker_vol_frac(tstop, n_agents, position)`.
+You can modify three parameters in these simulations: the length of the simulation (`tstop`), the number of cells in the simulation (`n_agents`), and the initial positions of the cells (`position`). So, the syntax for calling either the figure maker is `cell_kinetics_fig_maker(tstop, n_agents, position)`, and for the video maker, it's the same: `cell_kinetics_vid_maker(tstop, n_agents, position)`.
 
 Let's talk about each parameter.
 
@@ -188,8 +198,10 @@ Where:
 - $v_x$ and $v_y$ are the x and y components, respectively, of the cell's velocity in the inertial reference frame; and
 - $x$ and $y$ are the x and y positions, respectively, of the cell in the bioreactor.
 
+## Future additions
+
 ## Acknowledgements
-  Simulation data and some equations were drawn from the results of [Kim et al. (2025)'s](https://arxiv.org/abs/2504.05421) work on computational fluid modeling of rocking bioreactors. Many other equations were borrowed from [Cantarero-Rivera et al. (2024)'s](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full) work on computational modeling of cultivated meat bioprocess in a stirred-tank bioreactor. I was advised on this project by Dr. Daniel Harris, Dr. Radu Cimpeanu, Dr. Minki Kim, and Elvis Aguero.
+  Simulation data and some equations were drawn from the results of [Kim et al. (2025)'s](https://arxiv.org/abs/2504.05421) work on computational fluid modeling of rocking bioreactors. Many other equations were borrowed from [Cantarero-Rivera et al. (2024)'s](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full) work on computational modeling of cultivated meat bioprocess in a stirred-tank bioreactor. I was advised on this project by [Dr. Daniel Harris](https://vivo.brown.edu/display/dharri15), [Dr. Minki Kim](https://www.minki-kim.com/), and Elvis Aguero of the Harris Lab in the Brown University School of Engineering, and by [Dr. Radu Cimpeanu](https://www.raducimpeanu.com/) of the Scientific Computing Group at the University of Warwick.
 
 ## Contributing
 
