@@ -10,15 +10,20 @@ Cell motion is modeled by implementing four forces on each cell: Gravity/buoyanc
 ## Quickstart guide
 Follow the steps outlined in this section to gain familiarity with the core functionality of the repository, and to prepare to run simulations of your own design.
 
+### Requirements
+This repository was created using MATLAB R2024b.
+
 ### Cloning the repository
+`git clone https://github.com/lukerossi8/Rocking-Bioreactor-Cell-Kinetics`
+
 ### Preparing to run a simulation
 ### Creating a basic simulation
-Let's start by modeling a simple case — the repository's default simulation — to ensure everything is working smoothly. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, simply call `sim_flowfield_figure_maker()` in your command window or terminal. This will produce a figure of the particle trajectories, as well as plots of the cell velocities over time and the shear stress experienced by each cell over time.
+Let's start by modeling a simple case — the repository's default simulation — to ensure everything is working smoothly. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `sim_flowfield_figure_maker()` in your command window or terminal. This will produce a figure of the particle trajectories, as well as plots of the cell velocities over time and the shear stress experienced by each cell over time.
 
-To generate a video of the same default simulation, call `vol_frac_video_maker()` in your command window or terminal. This will produce a video of the cells moving through the bioreactor environment.
+To generate a video of the same default simulation, call `video_maker_vol_frac()` in your command window or terminal. This will produce a video of the cells moving through the bioreactor environment.
 
 ### A more complex simulation
-Now, let's model a more complex scenario. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `sim_flowfield_figure_maker(10, 100, 'random')` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. To generate the video of this simulation, call `vol_frac_video_maker()` in your command window or terminal. 
+Now, let's model a more complex scenario. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `sim_flowfield_figure_maker(10, 100, 'random')` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. To generate the video of this simulation, call `video_maker_vol_frac()` in your command window or terminal. 
 
 ### Creating your own simulations
 Now that you've run a few simulations, you can create new ones by varying the parameters in the figure maker and/or the video maker, calling either one or both as best suits your needs. For more information on the parameters that can be changed to create unique simulations, see the "Parameters" sub-section of the "Using the repository" section.
@@ -26,9 +31,8 @@ Now that you've run a few simulations, you can create new ones by varying the pa
 ## Using the repository
 ### File Structure
 
-
 ### Parameters 
-You can modify three parameters in these simulations: the length of the simulation (`tstop`), the number of cells in the simulation (`n_agents`), and the initial positions of the cells (`position`). So, the syntax for calling either the figure maker is `sim_flowfield_figure_maker(tstop, n_agents, position)`, and for the video maker, it's the same: `vol_frac_video_maker(tstop, n_agents, position)`.
+You can modify three parameters in these simulations: the length of the simulation (`tstop`), the number of cells in the simulation (`n_agents`), and the initial positions of the cells (`position`). So, the syntax for calling either the figure maker is `sim_flowfield_figure_maker(tstop, n_agents, position)`, and for the video maker, it's the same: `video_maker_vol_frac(tstop, n_agents, position)`.
 
 Let's talk about each parameter.
 
@@ -49,7 +53,31 @@ Let's talk about each parameter.
 
 ### Using your own background flow data
 
-At this time, the code base is not well-structured to handle different fluid flow fields, such as ones inputted by a user from their own fluid simulations. I would welcome improvements to the code base that allow for this functionality.
+The repository is currently configured to take in background flow from the provided `time_dependent_flow_data_out.mat` file. To use your own flow data, replace this file with one of your own creation. This file should have the following qualities:
+- The file should contain a variable `all_data`, containing a 3D matrix that represents one full period of rocking motion.
+  - The first dimension of this matrix should represent each point of the background flow grid. The points should be sorted first in ascending order by their x position, and then in descending order by their y position. The resulting order of points should look like this:
+    
+| x  | y |
+| -- | --|
+| 1  | 3 |
+| 2  | 3 |
+| 3  | 3 |
+| 1  | 2 |
+| 2  | 2 |
+| 3  | 2 |
+| 1  | 1 |
+| 2  | 1 |
+| 3  | 1 |
+
+  - The second dimension should represent each attribute of a given background flow grid point. These columns should be ordered in the following way: x position of the grid point, y position, x velocity at that grid point, y velocity, volume fraction at that grid point. Subsequent attributes are permitted but are not used.
+  - The third dimension should represent each time snapshot of the underlying flow field.
+- The file should also contain a variable `times`, representing the time associated with each third-dimension flow field snapshot. As such, `times` should be a one-dimensional column vector of the same length as the third dimension of the `all_data` matrix
+- All values should be dimensionalized with the following units:
+  - positions: meters
+  - velocities: meters per second
+  - times: seconds
+
+Note that the use of alternative flow data has not yet been thoroughly tested, so bugs may be encountered.
 
 ## Interpreting the results
 
@@ -88,7 +116,7 @@ Where $\theta$ is given by equation (5):
 Where:
 - $\theta_{max}$ is the rocking amplitude of $7^{\circ}$;
 - $t_{eff}$ is the effective time, meaning the simulated time modded by the period; and
-- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~$0.5953$ seconds.
+- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~ $0.5953$ seconds.
 
 ### Drag equation
 The drag force is based upon Stokes' flow past a sphere. It is implemented using equation (6):
@@ -150,19 +178,20 @@ Where:
 
 Expanding equation (13) gives equations (14) and (15), below:
 
-14. $F_{inertial,x} = -2\omega\theta_{max}\cos{(\omega t_{eff})}v_y + \omega^2\theta_{max}\sin{(\omega t_{eff})}y - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}x$
-15. $F_{inertial,y} = 2\omega\theta_{max}\cos{(\omega t_{eff})}v_x - \omega^2\theta_{max}\sin{(\omega t_{eff})}x - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}y$
+14. $F_{inertial,x} = m*(-2\omega\theta_{max}\cos{(\omega t_{eff})}v_y + \omega^2\theta_{max}\sin{(\omega t_{eff})}y - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}x)$
+15. $F_{inertial,y} = m*(2\omega\theta_{max}\cos{(\omega t_{eff})}v_x - \omega^2\theta_{max}\sin{(\omega t_{eff})}x - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}y)$
 
 Where:
-- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~$0.5953$ seconds;
+- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~ $0.5953$ seconds;
 - $\theta_{max}$ is the rocking amplitude of $7^{\circ}$;
 - $t_{eff}$ is the effective time, meaning the simulated time modded by the period;
 - $v_x$ and $v_y$ are the x and y components, respectively, of the cell's velocity in the inertial reference frame; and
 - $x$ and $y$ are the x and y positions, respectively, of the cell in the bioreactor.
 
 ## Acknowledgements
-  Simulation data and some equations were drawn from the results of Kim et al. (2025)'s work on computational fluid modeling of rocking bioreactors. Many other equations were borrowed from Cantarero-Rivera et al. (2024)'s work on computational modeling of cultivated meat bioprocess in a stirred-tank bioreactor. I was advised on this project by Dr. Daniel Harris, Dr. Radu Cimpeanu, Dr. Minki Kim, and Elvis Aguero.
+  Simulation data and some equations were drawn from the results of [Kim et al. (2025)'s](https://arxiv.org/abs/2504.05421) work on computational fluid modeling of rocking bioreactors. Many other equations were borrowed from [Cantarero-Rivera et al. (2024)'s](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full) work on computational modeling of cultivated meat bioprocess in a stirred-tank bioreactor. I was advised on this project by Dr. Daniel Harris, Dr. Radu Cimpeanu, Dr. Minki Kim, and Elvis Aguero.
 
 ## Contributing
 
 ## License
+This software is provided under the [MIT License](https://github.com/lukerossi8/Rocking-Bioreactor-Cell-Kinetics/blob/main/LICENSE). See the LICENSE file for more details.

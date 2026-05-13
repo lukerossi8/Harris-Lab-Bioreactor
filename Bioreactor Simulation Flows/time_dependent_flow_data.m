@@ -50,16 +50,15 @@ end
 % Dimensionalizing
 % Reference frames
 L_ref = 0.25; % m
-L_y = 1/3.5; % m
-H_ref = L_ref*L_y; % m2 I guess
+L_y = 1/3.5; % dimensionless
+H_ref = L_ref*L_y; % m
 
 theta_max = 7*pi/180; % in radians
 rpm = 20; % in rpm, given in flow data
 T_per = 60/rpm; % period in seconds
 
 V_ref = L_ref/4*(H_ref + 0.5*L_ref*tan(theta_max));
-U_ref = V_ref/(H_ref*0.5)/T_per; % characteristic velocity scale in m/s I guess
-
+U_ref = V_ref/(H_ref*0.5)/T_per; % characteristic velocity scale in m/s
 
 %  H_bio  = L_bio*Ly;
 %   V_bio  = L_bio/4*(H_bio + 0.5*L_bio*tan(Th_max));
