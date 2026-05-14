@@ -2,7 +2,9 @@
 This repository contains a collection of MATLAB functions that model cell dynamics in a rocking bioreactor environment. It models cell motion in a periodic background flow field based on prior CFD simulation data. It also models bonding interactions between cells. Users can customize the length of the simulation, the number of cells, and the cells' initial positions.
 
 ## Overview
-Cell motion is modeled by implementing four forces on each cell: Gravity/buoyancy, drag, a boundary interactive (repulsion) force, and a cell bonding force. Using these forces and a periodic fluid flow field imported from previous simulation data, this code base is able to compute each cell's position throughout the simulation. This data can be used to plot graphs and videos of the cells' trajectories. It can also be used to evaluate the shear stress experienced by the cells throughout the life of the simulation.
+The cells' motion is modeled by implementing four forces on each cell: Gravity/buoyancy, drag, a boundary interactive (repulsion) force, and a cell bonding force. Using these forces and a periodic fluid flow field imported from previous simulation data, this code base is able to compute each cell's position and velocity throughout the simulation. This data can be used to plot graphs and videos of the cells' trajectories. Future work may expand this project to model cell growth and death over the course of a simulation.
+
+The previous simulation data was created using [Basilisk](https://basilisk.fr/), an open-source CFD software.
 
 ## Background
  Rocking bioreactors are a promising candidate in  cultivated meat bioprocess optimization. They impart relatively low shear stresses on cells, along with being disposable and cost-effective. 
@@ -10,13 +12,12 @@ Cell motion is modeled by implementing four forces on each cell: Gravity/buoyanc
 ## Quickstart guide
 Follow the steps outlined in this section to gain familiarity with the core functionality of the repository, and to prepare to run simulations of your own design.
 
-### Requirements
+### MATLAB version
 This repository was created using MATLAB R2024b.
 
 ### Cloning the repository
 `git clone https://github.com/lukerossi8/Rocking-Bioreactor-Cell-Kinetics`
 
-### Preparing to run a simulation
 ### Creating a basic simulation
 Let's start by modeling a simple case — the repository's default simulation — to ensure everything is working smoothly. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `cell_kinetics_fig_maker()` in your command window or terminal. This will produce a figure of the particle trajectories, as well as plots of the cell velocities over time and the shear stress experienced by each cell over time.
 
@@ -33,12 +34,13 @@ Now that you've run a few simulations, you can create new ones by varying the pa
 
 ```
 .                        
-├── cell_kinetics.m                             # 
-├── cell_kinetics_fig_maker.m                   # 
-├── cell_kinetics_vid_maker.m                   # 
-├── time_dependent_flow_data.m                  # 
-├── time_dependent_flow_data_out.mat.           # 
-├── Bioreactor_data_7deg_20rpm_lv6_onecycle     # 
+├── cell_kinetics.m                             % Core simulation functionality
+├── cell_kinetics_fig_maker.m                   % Produces figures modeling a simulation
+├── cell_kinetics_vid_maker.m                   % Produces a video of a simulation
+├── time_dependent_flow_data.m                  % Pre-processor for the default background flow data
+├── time_dependent_flow_data_out.mat.           % The processed default background flow data
+├── Bioreactor_data_7deg_20rpm_lv6_onecycle/    % Folder containing all the unprocessed background flow data
+    └── (Background flow data files)     
 ```
 
 ### Parameters 
@@ -60,6 +62,8 @@ Let's talk about each parameter.
         -0.03, -0.08;
         -0.04, -0.09;
         -0.05, -0.10];`
+
+### Outputs
 
 ### Using your own background flow data
 
@@ -89,15 +93,13 @@ The repository is currently configured to take in background flow from the provi
 
 Note that the use of alternative flow data has not yet been thoroughly tested, so bugs may be encountered.
 
-## Interpreting the results
-
 ## Equations
 The simulation solves the equation of motion for each cell as it moves through the simulated bioreactor environment. 
 
 ### Overall equation of motion
 Equation (1) defines the forces experienced by each cell and modeled in this simulation.
 
-1. $dvdt = \frac{\vec{F_g} + \vec{F_d} + ∑\vec{F_{bond}} + \vec{F_{boundary}} - \vec{F_{inertial}}}{m_c}$
+1. $d\vec{v}/dt = \frac{\vec{F}_g + \vec{F}_d + ∑\vec{F}_{bond} + \vec{F}_{boundary} - \vec{F}_{inertial}}{m_c}$
 
 Where $m_c$ is the mass of the cell, and each $\vec{F}$ term in the numerator is elaborated in the following sub-sections.
 
@@ -188,8 +190,8 @@ Where:
 
 Expanding equation (13) gives equations (14) and (15), below:
 
-14. $F_{inertial,x} = m*(-2\omega\theta_{max}\cos{(\omega t_{eff})}v_y + \omega^2\theta_{max}\sin{(\omega t_{eff})}y - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}x)$
-15. $F_{inertial,y} = m*(2\omega\theta_{max}\cos{(\omega t_{eff})}v_x - \omega^2\theta_{max}\sin{(\omega t_{eff})}x - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}y)$
+14. $F_{inertial,x} = m\cdot(-2\omega\theta_{max}\cos{(\omega t_{eff})}v_y + \omega^2\theta_{max}\sin{(\omega t_{eff})}y - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}x)$
+15. $F_{inertial,y} = m\cdot(2\omega\theta_{max}\cos{(\omega t_{eff})}v_x - \omega^2\theta_{max}\sin{(\omega t_{eff})}x - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}y)$
 
 Where:
 - $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~ $0.5953$ seconds;
@@ -201,9 +203,7 @@ Where:
 ## Future additions
 
 ## Acknowledgements
-  Simulation data and some equations were drawn from the results of [Kim et al. (2025)'s](https://arxiv.org/abs/2504.05421) work on computational fluid modeling of rocking bioreactors. Many other equations were borrowed from [Cantarero-Rivera et al. (2024)'s](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full) work on computational modeling of cultivated meat bioprocess in a stirred-tank bioreactor. I was advised on this project by [Dr. Daniel Harris](https://vivo.brown.edu/display/dharri15), [Dr. Minki Kim](https://www.minki-kim.com/), and Elvis Aguero of the Harris Lab in the Brown University School of Engineering, and by [Dr. Radu Cimpeanu](https://www.raducimpeanu.com/) of the Scientific Computing Group at the University of Warwick.
-
-## Contributing
+  Simulation data and some equations were drawn from the results of [Kim et al. (2025)'s](https://arxiv.org/abs/2504.05421) work on computational fluid modeling of rocking bioreactors. Many other equations were borrowed from [Cantarero-Rivera et al. (2024)'s](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full) work on computational modeling of cultivated meat bioprocess in a stirred-tank bioreactor. I was advised on this project by [Dr. Daniel Harris](https://vivo.brown.edu/display/dharri15), [Dr. Minki Kim](https://www.minki-kim.com/), and [Elvis Aguero](https://elvispy.github.io/) of the Harris Lab in the Brown University School of Engineering, and by [Dr. Radu Cimpeanu](https://www.raducimpeanu.com/) of the Scientific Computing Group at the University of Warwick.
 
 ## License
 This software is provided under the [MIT License](https://github.com/lukerossi8/Rocking-Bioreactor-Cell-Kinetics/blob/main/LICENSE). See the LICENSE file for more details.

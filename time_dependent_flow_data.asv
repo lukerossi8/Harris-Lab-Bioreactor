@@ -37,10 +37,8 @@ for i=3:height(data_files) % Ignoring first two files, '.' and '..'
     file_table_sort1 = sortrows(file_table_raw,1);
     file_table_sort2 = sortrows(file_table_sort1,2,'descend');
     file_2d_array = table2array(file_table_sort2); % This is the sorted 2d array of the data from the particular file
-    file_2d_array_trim = file_2d_array(1409:2688, :); % Manually extracting the non-empty rows, as many only had blank values
 
-
-    all_data(:,:,i-2) = file_2d_array_trim;
+    all_data(:,:,i-2) = file_2d_array;
 
     % Extracting the time from the file name
     to_remove = ["Data_all_64_", "_0.dat"];
@@ -66,15 +64,11 @@ y = all_data(:,2,:);
 vx = all_data(:,3,:);
 vy = all_data(:,4,:);
 
-x_dim = x.*L_ref; % m
-y_dim = y.*L_ref; % m
-vx_dim = vx.*V_ref; % m/s
-vy_dim = vy.*V_ref; % m/s
+x = x.*L_ref;
+y = y.*L_ref;
+vx = vx.*V_ref;
+vy = vy.*V_ref;
 
-all_data(:,1,:) = x_dim;
-all_data(:,2,:) = y_dim;
-all_data(:,3,:) = vx_dim;
-all_data(:,4,:) = vy_dim;
-
-save("time_dependent_flow_data_output.mat", "all_data", "times");
+all_data(:,1)
+% save("time_dependent_flow_data_out.mat", "all_data", "times");
 

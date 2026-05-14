@@ -15,15 +15,15 @@ function cell_kinetics_vid_maker(tstop, n_agents, position)
 %   simulation.
 
 arguments
-    tstop (1,1) double = 0.5;
+    tstop (1,1) double = 3;
     n_agents (1,1) double = 6;
     position {mustBeRandomRandomBondedOrPosMatrix(position, n_agents)} = ...
-        [0, -0.05;
-        -0.01, -0.06;
-        -0.02, -0.07;
-        -0.03, -0.08;
-        -0.04, -0.09;
-        -0.05, -0.10];
+        [0, -0.01;
+        -0.002, -0.012;
+        -0.004, -0.014;
+        -0.006, -0.016;
+        -0.008, -0.018;
+        -0.01, -0.02];
 end
 
 % Calling the simulator function
@@ -42,6 +42,13 @@ s0 = my_output.s0;
 flow_data = my_output.flow_data;
 t_plot = my_output.t_plot;
 times = my_output.times;
+
+grid_length = size(X_grid, 2);
+grid_height = size(X_grid, 1);
+floor = min(Y_grid(:,1)); % low y boundary, m
+ceil = max(Y_grid(:,1)); % high y boundary, m
+l_wall = min(X_grid(1,:)); % left x boundary, m
+r_wall = max(X_grid(1,:)); % right x boundary, m
 
 % Defining position and velocity data for all agents
 x_plot = z_all_plot(:,1:n_agents);
@@ -65,7 +72,7 @@ open(vid);
 fig = figure;
 step = 1;
 for ii=1:step:length(t_plot)
-    
+
     hold off;
     t_eff = mod(t_plot(ii), times(end)); % effective time inside a single period
 
@@ -73,7 +80,7 @@ for ii=1:step:length(t_plot)
     layer = find(times <= t_eff, 1, 'last');
 
     vol_frac = flow_data(:,5, layer); % volume fraction data at current time
-    vol_frac_grid = reshape(vol_frac, 64, 64)';
+    vol_frac_grid = reshape(vol_frac, grid_length, grid_height)';
     c = pcolor(X_grid, Y_grid, vol_frac_grid);
     hold on;
     c.FaceColor = 'interp';
@@ -81,7 +88,7 @@ for ii=1:step:length(t_plot)
 
     % Define three colors for the gradient
     color_pos = [0.9290 0.6940 0.1250];   % Yellow for 1 vf
-    color_neg = [1 1 1];   % White for 0 vf
+    color_neg = [0.894, 0.914, 0.984];   % Light blue for 0 vf
     % Create a custom colormap with a smooth transition between these three colors
     numColors = 256;  % Number of colors in the colormap (higher resolution)
     cmap = [linspace(color_neg(1), color_pos(1), numColors)', ...
@@ -91,7 +98,7 @@ for ii=1:step:length(t_plot)
     colormap(cmap);
     cb = colorbar;
     yl = ylabel(cb,'Volume fraction','FontSize',10,'Rotation',270);
-    
+
     for j=1:n_agents
         plot(x_plot(1:ii,j), y_plot(1:ii,j), 'color', col_list(mod(j, 4)+1), "LineWidth", 1.25);
         plot(x_plot(ii,j), y_plot(ii,j), "or", "LineWidth", 1.25)
@@ -99,15 +106,20 @@ for ii=1:step:length(t_plot)
     grid on
     xlabel('x position (m)')
     ylabel('y position (m)')
-    xlim([-0.6 0.6])
-    ylim([-0.2 0.2])
+    if r_wall-l_wall > ceil-floor % If the geometry is a wide rectangle
+        xlim([l_wall*1.1 r_wall*1.1])
+        ylim([l_wall*1.1 r_wall*1.1])
+    else % If the geometry is a square or a narrow rectangle
+        xlim([floor*1.1 ceil*1.1])
+        ylim([floor*1.1 ceil*1.1])
+    end
     title('Cell trajectories in time-dependent bioreactor simulation flow field - plain background')
     subtitle('time: ' + string(t_plot(ii)) + ' seconds — period time: 0.595 seconds')
 
     % Capture the frame
     frame = getframe(gcf);
     writeVideo(vid, frame);
-    
+
 end
 
 % Close video writer

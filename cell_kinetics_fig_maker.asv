@@ -124,13 +124,7 @@ end
 grid on
 xlabel('x position (m)')
 ylabel('y position (m)')
-if r_wall-l_wall > ceil-floor % If the geometry is a wide rectangle
-    xlim([l_wall*1.1 r_wall*1.1])
-    ylim([l_wall*1.1 r_wall*1.1])
-else % If the geometry is a square or a narrow rectangle
-    xlim([floor*1.1 ceil*1.1])
-    ylim([floor*1.1 ceil*1.1])
-end
+ylim([-0.15 0.15])
 title('Cell trajectories in time-dependent bioreactor simulation flow field')
 subtitle(append('simulation time: ', num2str(tstop), ' seconds — period time: 0.595 seconds'))
 
@@ -146,7 +140,7 @@ c.EdgeColor = 'none';
 % Define three colors for the gradient
 [0.9290 0.6940 0.1250];   % Yellow for 1 vf
 color_pos = [0.9590 0.7240 0.1550];   % Yellow for positive vorticity
-color_neg = [0.894, 0.914, 0.984];   % Light blue for 0 vf
+color_neg = [1 1 1];   % White for 0 vf
 % Create a custom colormap with a smooth transition between these three colors
 numColors = 256;  % Number of colors in the colormap (higher resolution)
 cmap = [linspace(color_neg(1), color_pos(1), numColors)', ...
@@ -164,15 +158,9 @@ for i=1:n_agents
     plot(s0(i), s0(i+n_agents), "or", "LineWidth", 1.25)
 end
 grid on
+ylim([-0.15 0.15])
 xlabel('x position (m)')
 ylabel('y position (m)')
-if r_wall-l_wall > ceil-floor % If the geometry is a wide rectangle
-    xlim([l_wall*1.1 r_wall*1.1])
-    ylim([l_wall*1.1 r_wall*1.1])
-else % If the geometry is a square or a narrow rectangle
-    xlim([floor*1.1 ceil*1.1])
-    ylim([floor*1.1 ceil*1.1])
-end
 title('Cell kinetics model in bioreactor simulation flow field')
 
 
@@ -198,6 +186,38 @@ xlabel('velocity (m/s)')
 ylabel('number of particles')
 title('Average velocity distribution')
 subtitle(append('simulation time: ', num2str(tstop), ' s     total agents: ', num2str(n_agents)))
+
+%% Plotting velocity over time of simulation
+% figure
+% for i=1:n_agents
+%     hold on
+%     plot(t_plot, v_plot(:, i))
+%     grid on
+%     xlabel('time (s)')
+%     ylabel('velocity (m/s)')
+% end
+
+%% Plotting distance between agents over time
+% dist_plot_1_3 = sqrt((x_plot(:, 3) - x_plot(:, 1)).^2 + (y_plot(:, 3) - y_plot(:, 1)).^2);
+% dist_plot_2_4 = sqrt((x_plot(:, 4) - x_plot(:, 2)).^2 + (y_plot(:, 4) - y_plot(:, 2)).^2);
+
+% figure
+% hold on
+% plot(t_plot, dist_plot_2_4, 'LineWidth',2)
+% yline(2*r_i(1))
+% grid on
+% xlabel('time (s)')
+% ylabel('particle distance (m)')
+% title('distance between agents 2 and 4 — with bonding')
+% 
+% figure
+% hold on
+% plot(t_plot, dist_plot_1_3, 'LineWidth',2)
+% yline(2*r_i(1))
+% grid on
+% xlabel('time (s)')
+% ylabel('particle distance (m)')
+% title('distance between agents 1 and 3 — with bonding')
 end
 
 function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
