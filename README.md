@@ -39,7 +39,7 @@ Now that you've run a few simulations, you can create new ones by varying the pa
 ├── cell_kinetics_vid_maker.m                   % Produces a video of a simulation
 ├── time_dependent_flow_data.m                  % Pre-processor for the default background flow data
 ├── time_dependent_flow_data_out.mat.           % The processed default background flow data
-├── Bioreactor_data_7deg_20rpm_lv6_onecycle/    % Folder containing all the unprocessed background flow data
+├── /Bioreactor_data_7deg_20rpm_lv6_onecycle/    % Folder containing all the unprocessed background flow data
     └── (Background flow data files)     
 ```
 
@@ -200,7 +200,14 @@ Where:
 - $v_x$ and $v_y$ are the x and y components, respectively, of the cell's velocity in the inertial reference frame; and
 - $x$ and $y$ are the x and y positions, respectively, of the cell in the bioreactor.
 
-## Future additions
+## Future additions and improvements
+There are many potential ways this project can be improved, or its scope expanded. Future work on these objectives would be very welcome.
+- [ ] The implementation of the force between the cells and the boundary of the bioreactor may benefit from further validation, and improvements may be possible.
+- [ ] Import a variety of background flow data to investigate this code base's ability to handle different geometries, coarseness, etc. This theoretically should work as long as the new background flow data is properly formatted, but it has not been extensively tested.
+- [ ] Use this code base to investigate shear stress experienced by the cells, a key parameter for their growth and death.
+- [ ] Improve the runtime efficiency of the cell_kinetics.m file. Particularly, the interp2 function is currently very costly, as it re-interpolates the fluid velocity and volume fraction at each cell's location at every timestep inside the ODE solver. Instead, one high-resolution interpolation could be created before entering the ODE solver, to avoid a high number of repeated calls to interp2.
+- [ ] Expand the code base to model cell growth and death. A possible starting point for this would be the work of [Cantarero-Rivera et al. (2024)](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full), who developed an agent-based model for cell growth in a stirred-tank bioreactor.
+
 
 ## Acknowledgements
   Simulation data and some equations were drawn from the results of [Kim et al. (2025)'s](https://arxiv.org/abs/2504.05421) work on computational fluid modeling of rocking bioreactors. Many other equations were borrowed from [Cantarero-Rivera et al. (2024)'s](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full) work on computational modeling of cultivated meat bioprocess in a stirred-tank bioreactor. I was advised on this project by [Dr. Daniel Harris](https://vivo.brown.edu/display/dharri15), [Dr. Minki Kim](https://www.minki-kim.com/), and [Elvis Aguero](https://elvispy.github.io/) of the Harris Lab in the Brown University School of Engineering, and by [Dr. Radu Cimpeanu](https://www.raducimpeanu.com/) of the Scientific Computing Group at the University of Warwick.

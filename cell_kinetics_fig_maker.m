@@ -45,6 +45,7 @@ n_agents = my_output.n_agents;
 s0 = my_output.s0;
 flow_data = my_output.flow_data;
 t_plot = my_output.t_plot;
+period = my_output.period;
 
 grid_length = size(X_grid, 2);
 grid_height = size(X_grid, 1);
@@ -66,10 +67,11 @@ col_list = ["black", "red", "blue", "magenta"];
 %% Plot agent trajectories
 figure
 hold on
-rectangle('Position', [l_wall, floor, r_wall-l_wall, ceil-floor], 'FaceColor',[0.55, 0.86, 0.92],...
-    'LineWidth',2)
+rectangle('Position', [l_wall, floor, r_wall-l_wall, ceil-floor],...
+    'FaceColor',[0.55, 0.86, 0.92], 'LineWidth',2)
 for i=1:n_agents
-    plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), "LineWidth", 1.25);
+    plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1),...
+        "LineWidth", 1.25);
     plot(s0(i), s0(i+n_agents), "or", "LineWidth", 1.25)
 end
 grid on
@@ -82,8 +84,10 @@ else % If the geometry is a square or a narrow rectangle
     xlim([floor*1.1 ceil*1.1])
     ylim([floor*1.1 ceil*1.1])
 end
-title('Cell trajectories in time-dependent bioreactor simulation flow field - plain background')
-subtitle('simulation time: ' + string(tstop) + ' seconds — period time: 0.595 seconds')
+title(['Cell trajectories in time-dependent bioreactor simulation ' ...
+    'flow field - plain background'])
+subtitle('simulation time: ' + string(tstop) + [' seconds — rocking ' ...
+    'period: '] + period + ' seconds')
 
 %% Plot agent trajectories w/ initial background velocity & vorticity
 figure
@@ -113,12 +117,13 @@ cmap = [cmap_neg_to_zero; cmap_zero_to_pos];
 
 colormap(cmap);
 cb = colorbar;
-yl = ylabel(cb,'Vorticity','FontSize',10,'Rotation',270);
+yl = ylabel(cb,'Initial vorticity','FontSize',10,'Rotation',270);
 
 q = quiver(X_grid, Y_grid, vfx_disc, vfy_disc, 'k');
 
 for i=1:n_agents
-    plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), "LineWidth", 1.25);
+    plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), ...
+        "LineWidth", 1.25);
     plot(s0(i), s0(i+n_agents), "or", "LineWidth", 1.25)
 end
 grid on
@@ -132,7 +137,8 @@ else % If the geometry is a square or a narrow rectangle
     ylim([floor*1.1 ceil*1.1])
 end
 title('Cell trajectories in time-dependent bioreactor simulation flow field')
-subtitle(append('simulation time: ', num2str(tstop), ' seconds — period time: 0.595 seconds'))
+subtitle('simulation time: ' + string(tstop) + [' seconds — rocking ' ...
+    'period: '] + period + ' seconds')
 
 %% Plot agent trajectories w/ background velocity & volume fraction in TG vortex
 figure
@@ -145,7 +151,7 @@ c.EdgeColor = 'none';
 
 % Define three colors for the gradient
 [0.9290 0.6940 0.1250];   % Yellow for 1 vf
-color_pos = [0.9590 0.7240 0.1550];   % Yellow for positive vorticity
+color_pos = [0.9590 0.7240 0.1550];   % Yellow for positive vf
 color_neg = [0.894, 0.914, 0.984];   % Light blue for 0 vf
 % Create a custom colormap with a smooth transition between these three colors
 numColors = 256;  % Number of colors in the colormap (higher resolution)
@@ -155,12 +161,13 @@ cmap = [linspace(color_neg(1), color_pos(1), numColors)', ...
 
 colormap(cmap);
 cb = colorbar;
-yl = ylabel(cb,'Volume fraction','FontSize',10,'Rotation',270);
+yl = ylabel(cb,'Initial volume fraction','FontSize',10,'Rotation',270);
 
 q = quiver(X_grid, Y_grid, vfx_disc, vfy_disc, 'k');
 
 for i=1:n_agents
-    plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), "LineWidth", 1.25);
+    plot(x_plot(:,i), y_plot(:,i), 'color', col_list(mod(i, 4)+1), ...
+        "LineWidth", 1.25);
     plot(s0(i), s0(i+n_agents), "or", "LineWidth", 1.25)
 end
 grid on
@@ -173,22 +180,10 @@ else % If the geometry is a square or a narrow rectangle
     xlim([floor*1.1 ceil*1.1])
     ylim([floor*1.1 ceil*1.1])
 end
-title('Cell kinetics model in bioreactor simulation flow field')
-
-
-%% Plotting time step size over time of simulation
-
-deltat = [0];
-for i=2:length(t_plot)
-    deltat(end+1) = t_plot(i) - t_plot(i-1);
-end
-
-figure
-plot(t_plot, deltat)
-grid on
-xlabel('time (s)')
-ylabel('time step size (s)')
-title('Time step size throughout the simulation')
+title('Cell trajectories in time-dependent bioreactor simulation flow field')
+subtitle('background: initial volume fraction')
+subtitle('simulation time: ' + string(tstop) + [' seconds — rocking ' ...
+    'period: '] + period + ' seconds')
 
 %% Plotting histogram of average velocities
 v_avg_plot = mean(v_plot); % Average speed of each particle, m/s
@@ -197,12 +192,13 @@ histogram(v_avg_plot, 20)
 xlabel('velocity (m/s)')
 ylabel('number of particles')
 title('Average velocity distribution')
-subtitle(append('simulation time: ', num2str(tstop), ' s     total agents: ', num2str(n_agents)))
+subtitle(append('simulation time: ', num2str(tstop), [' s - total ' ...
+    'agents: '], num2str(n_agents)))
 end
-
 function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
 eidType = 'mustBeRandomRandomBondedOrPosMatrix:notAllowedValue';
-msgType = 'Input must be a string in ["random", "random bonded"], or a matrix of size [n_agents, 2] column.';
+msgType = ['Input must be a string in ["random", "random bonded"], ' ...
+    'or a matrix of size [n_agents, 2] column.'];
 if isa(position, "string")
     if ~ismember(position, ["random", "random bonded"])
         error(eidType, msgType)

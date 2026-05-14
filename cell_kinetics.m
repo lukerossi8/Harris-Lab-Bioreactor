@@ -11,27 +11,26 @@ function my_output = cell_kinetics(tstop, n_agents, position)
 % Outputs
 %   my_output   Struct containing the following fields:
 %       X_grid      Matrix containing x position at each point in 
-%                   background grid
+%                   background grid (m)
 %       Y_grid      Matrix containing y position at each point in 
-%                   background grid
+%                   background grid (m)
 %       vfx_disc    Matrix containing x component of background flow
-%                   velocity at each point in background grid
+%                   velocity at each point in background grid (m/s)
 %       vfy_disc    Matrix containing y component of background flow
-%                   velocity at each point in background grid
+%                   velocity at each point in background grid (m/s)
 %       z_all_plot  Matrix containing position and velocity data (x and y
-%                   components) for each agent at each timestep
+%                   components) for each agent at each timestep (m/s)
 %       n_agents    Double representing the number of agents being modeled
 %       s0          Vector containing initial positions of all agents
 %       flow_data   Imported flow data from the time_dependent_flow_data
 %                   script
-%       t_plot      Vector containing the time at each simulation step
+%       t_plot      Vector containing the time at each simulation step (s)
 %       times       Vector containing times associated with each background
-%                   flow snapshot
-%       runtime     Double containing the elapsed time to run the
-%                   simulation
+%                   flow snapshot (s)
+%       runtime     Double representing the elapsed time to run the
+%                   simulation (s)
 %       theta       Vector containing rocking angle at selected timesteps
-%       g_plot      Matrix containing x and y components of gravity vector
-%                   at selected timesteps
+%       period      Double representing the rocking period (s)
 
 arguments
     tstop (1,1) double = 3;
@@ -58,7 +57,7 @@ rho_f = 1000; % kg/m^3
 rho_a = 1.204; % kg/m^3
 
 % Loading the simulation results, separating into flow data and time steps
-sim_results = load("time_dependent_flow_data_output.mat");
+sim_results = load("time_dependent_flow_data_out.mat");
 flow_data = sim_results.all_data;
 times = sim_results.times; % dimensionless
 times = times - times(1); % normalizing to start at 0
@@ -66,7 +65,7 @@ dt = mean(diff(times));
 
 % Defining rocking parameters
 theta_max = 7*pi/180; % maximum rocking angle, in radians
-period = times(end); % rocking period, dimensionless
+period = times(end) + dt; % rocking period, s
 omega = 2*pi/period; % angular velocity, 1/s
 
 % Define the flow field points
@@ -105,7 +104,7 @@ Bonded_pairs = zeros(n_agents, n_agents);
 if isa(position, "string")
     if position == "random" % Random position setting
         x0 = l_wall + 0.2*(r_wall - l_wall) + 0.6*(r_wall - l_wall).*rand(n_agents, 1);
-        y0 = floor + 0.05*(ceil - floor) + 0.15*(ceil - floor).*rand(n_agents, 1);
+        y0 = floor + 0.05*(ceil - floor) + 0.4*(ceil - floor).*rand(n_agents, 1);
     elseif position == "random bonded" % Random bonded position setting
         n_bonds = floor(n_agents/2);
         n_unbonded = n_agents - 2*n_bonds;
@@ -144,13 +143,11 @@ elapsed_time = toc;
 disp(elapsed_time)
 
 theta = theta_max*sin(2*pi.*t_plot/period); % angular velocity
-g_plot = [-9.81*sin(theta), -9.81*cos(theta)];
 
 my_output = struct('X_grid', X_grid, 'Y_grid', Y_grid, ...
     'vfx_disc', vfx_disc, 'vfy_disc', vfy_disc, 'z_all_plot', z_all_plot, ...
     'n_agents', n_agents, 's0', s0, 'flow_data', flow_data, ...
-    't_plot', t_plot, 'times', times, 'runtime', elapsed_time, 'theta', theta, ...
-    'g_plot', g_plot);
+    't_plot', t_plot, 'times', times, 'runtime', elapsed_time, 'theta', theta, 'period', period);
 
 %% Numerical solution
     function dzdt = eom(t, z, mu_f, mu_a, r_c, X_grid, Y_grid, m, theta_max, period, omega, rho_f, rho_a, rho_c, n_agents, flow_data, grid_length, grid_height)

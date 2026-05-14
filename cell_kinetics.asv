@@ -30,8 +30,7 @@ function my_output = cell_kinetics(tstop, n_agents, position)
 %       runtime     Double containing the elapsed time to run the
 %                   simulation
 %       theta       Vector containing rocking angle at selected timesteps
-%       g_plot      Matrix containing x and y components of gravity vector
-%                   at selected timesteps
+
 
 arguments
     tstop (1,1) double = 3;
@@ -58,7 +57,7 @@ rho_f = 1000; % kg/m^3
 rho_a = 1.204; % kg/m^3
 
 % Loading the simulation results, separating into flow data and time steps
-sim_results = load("time_dependent_flow_data_output.mat");
+sim_results = load("time_dependent_flow_data_out.mat");
 flow_data = sim_results.all_data;
 times = sim_results.times; % dimensionless
 times = times - times(1); % normalizing to start at 0
@@ -66,7 +65,7 @@ dt = mean(diff(times));
 
 % Defining rocking parameters
 theta_max = 7*pi/180; % maximum rocking angle, in radians
-period = times(end); % rocking period, dimensionless
+period = times(end) + dt; % rocking period, s
 omega = 2*pi/period; % angular velocity, 1/s
 
 % Define the flow field points
@@ -104,17 +103,17 @@ Bonded_pairs = zeros(n_agents, n_agents);
 % Set positions of agents — randomly, randomly with bonds, or manually
 if isa(position, "string")
     if position == "random" % Random position setting
-        x0 = l_wall + 0.35*(r_wall - l_wall) + 0.3*(r_wall - l_wall).*rand(n_agents, 1);
+        x0 = l_wall + 0.2*(r_wall - l_wall) + 0.6*(r_wall - l_wall).*rand(n_agents, 1);
         y0 = floor + 0.05*(ceil - floor) + 0.15*(ceil - floor).*rand(n_agents, 1);
     elseif position == "random bonded" % Random bonded position setting
         n_bonds = floor(n_agents/2);
         n_unbonded = n_agents - 2*n_bonds;
-        x01 = l_wall + 0.35*(r_wall - l_wall) + 0.3*(r_wall - l_wall).*rand(n_bonds, 1);
+        x01 = l_wall + 0.2*(r_wall - l_wall) + 0.6*(r_wall - l_wall).*rand(n_bonds, 1);
         x02 = x01 + 14e-5;
-        x0_unbonded = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_unbonded, 1);
+        x0_unbonded = l_wall + 0.2*(r_wall - l_wall) + 0.6*(r_wall - l_wall).*rand(n_unbonded, 1);
         x0 = [x01;x02;x0_unbonded];
         y01 = floor + 0.05*(ceil - floor) + 0.15*(ceil - floor).*rand(n_bonds, 1);
-        y0_unbonded = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_unbonded, 1);
+        y0_unbonded = floor + 0.05*(ceil - floor) + 0.15*(ceil - floor).*rand(n_unbonded, 1);
         y0 = [y01;y01;y0_unbonded];
     end
 else % For manual position setting
@@ -144,13 +143,11 @@ elapsed_time = toc;
 disp(elapsed_time)
 
 theta = theta_max*sin(2*pi.*t_plot/period); % angular velocity
-g_plot = [-9.81*sin(theta), -9.81*cos(theta)];
 
 my_output = struct('X_grid', X_grid, 'Y_grid', Y_grid, ...
     'vfx_disc', vfx_disc, 'vfy_disc', vfy_disc, 'z_all_plot', z_all_plot, ...
     'n_agents', n_agents, 's0', s0, 'flow_data', flow_data, ...
-    't_plot', t_plot, 'times', times, 'runtime', elapsed_time, 'theta', theta, ...
-    'g_plot', g_plot);
+    't_plot', t_plot, 'times', times, 'runtime', elapsed_time, 'theta', theta);
 
 %% Numerical solution
     function dzdt = eom(t, z, mu_f, mu_a, r_c, X_grid, Y_grid, m, theta_max, period, omega, rho_f, rho_a, rho_c, n_agents, flow_data, grid_length, grid_height)
@@ -273,8 +270,8 @@ F_inertial_y = m.*(-2*omega*theta_max*cos(omega*t_eff)*vx...
     + theta_max^2*omega^2*cos(omega*t_eff).^2*y); % Fictitious forces in y direction, N
 
 % Velocity derivatives represented by sum of forces div by masses
-dvxdt = (Fgx./m)*cos(theta_rock) + (Fdx + net_bond_forces_x + F_wall_x + F_inertial_x) ./ m;
-dvydt = (Fgy./m)*sin(theta_rock) + (Fdy + net_bond_forces_y + F_wall_y + F_inertial_y) ./ m;
+dvxdt = (Fgx./m)*sin(theta_rock) + (Fdx + net_bond_forces_x + F_wall_x + F_inertial_x) ./ m;
+dvydt = (Fgy./m)*cos(theta_rock) + (Fdy + net_bond_forces_y + F_wall_y + F_inertial_y) ./ m;
 
 % Store the position and velocity derivatives
 dzdt(1:n_agents) = dxdt;

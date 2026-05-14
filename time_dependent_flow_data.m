@@ -76,5 +76,5 @@ all_data(:,2,:) = y_dim;
 all_data(:,3,:) = vx_dim;
 all_data(:,4,:) = vy_dim;
 
-save("time_dependent_flow_data_output.mat", "all_data", "times");
+save("time_dependent_flow_data_out.mat", "all_data", "times");
 
