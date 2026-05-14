@@ -104,17 +104,17 @@ Bonded_pairs = zeros(n_agents, n_agents);
 % Set positions of agents — randomly, randomly with bonds, or manually
 if isa(position, "string")
     if position == "random" % Random position setting
-        x0 = l_wall + 0.35*(r_wall - l_wall) + 0.3*(r_wall - l_wall).*rand(n_agents, 1);
+        x0 = l_wall + 0.2*(r_wall - l_wall) + 0.6*(r_wall - l_wall).*rand(n_agents, 1);
         y0 = floor + 0.05*(ceil - floor) + 0.15*(ceil - floor).*rand(n_agents, 1);
     elseif position == "random bonded" % Random bonded position setting
         n_bonds = floor(n_agents/2);
         n_unbonded = n_agents - 2*n_bonds;
-        x01 = l_wall + 0.35*(r_wall - l_wall) + 0.3*(r_wall - l_wall).*rand(n_bonds, 1);
+        x01 = l_wall + 0.2*(r_wall - l_wall) + 0.6*(r_wall - l_wall).*rand(n_bonds, 1);
         x02 = x01 + 14e-5;
-        x0_unbonded = l_wall + 0.05*(r_wall - l_wall) + 0.9*(r_wall - l_wall).*rand(n_unbonded, 1);
+        x0_unbonded = l_wall + 0.2*(r_wall - l_wall) + 0.6*(r_wall - l_wall).*rand(n_unbonded, 1);
         x0 = [x01;x02;x0_unbonded];
         y01 = floor + 0.05*(ceil - floor) + 0.15*(ceil - floor).*rand(n_bonds, 1);
-        y0_unbonded = floor + 0.05*(ceil - floor) + 0.9*(ceil - floor).*rand(n_unbonded, 1);
+        y0_unbonded = floor + 0.05*(ceil - floor) + 0.15*(ceil - floor).*rand(n_unbonded, 1);
         y0 = [y01;y01;y0_unbonded];
     end
 else % For manual position setting
@@ -273,8 +273,8 @@ F_inertial_y = m.*(-2*omega*theta_max*cos(omega*t_eff)*vx...
     + theta_max^2*omega^2*cos(omega*t_eff).^2*y); % Fictitious forces in y direction, N
 
 % Velocity derivatives represented by sum of forces div by masses
-dvxdt = (Fgx./m)*cos(theta_rock) + (Fdx + net_bond_forces_x + F_wall_x + F_inertial_x) ./ m;
-dvydt = (Fgy./m)*sin(theta_rock) + (Fdy + net_bond_forces_y + F_wall_y + F_inertial_y) ./ m;
+dvxdt = (Fgx./m)*sin(theta_rock) + (Fdx + net_bond_forces_x + F_wall_x + F_inertial_x) ./ m;
+dvydt = (Fgy./m)*cos(theta_rock) + (Fdy + net_bond_forces_y + F_wall_y + F_inertial_y) ./ m;
 
 % Store the position and velocity derivatives
 dzdt(1:n_agents) = dxdt;
