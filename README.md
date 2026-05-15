@@ -20,14 +20,13 @@ This repository was created using MATLAB R2024b.
 
 ### Creating a basic simulation
 Let's start by modeling a simple case — the repository's default simulation — to ensure everything is working smoothly. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `cell_kinetics_fig_maker()` in your command window or terminal. This will produce four figures: three of the particle trajectories, and one of a velocity distribution histogram of the cells. The figures look like this:
-|  |  |
-|---|---|
 | ![1st quickstart figure 1](Figures/qs1_fig1.png) | ![1st quickstart figure 2](Figures/qs1_fig2.png) |
+|---|---|
 | ![1st quickstart figure 3](Figures/qs1_fig3.png) | ![1st quickstart figure 4](Figures/qs1_fig4.png) |
 
 To generate a video of the same default simulation, call `cell_kinetics_vid_maker()` in your command window or terminal. This will produce a (nearly real-speed) video of the cells moving through the bioreactor environment. The video looks like this:
 
-![1st quickstart video](Videos/qs1_vid.gif)
+<img src="Videos/qs1_vid.gif" width="800">
 
 ### A more complex simulation
 Now, let's model a more complex scenario. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, "random")` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. The figures look like this:
@@ -39,7 +38,8 @@ Now, let's model a more complex scenario. This time, we'll model 100 cells, rand
 
 To generate the video of this simulation, call `cell_kinetics_vid_maker(10, 100, "random")` in your command window or terminal. The video looks like this:
 
-![2nd quickstart video](Videos/qs2_vid.gif)
+
+<img src="Videos/qs2_vid.gif" width="800">
 
 ### Creating your own simulations
 Now that you've run a few simulations, you can create new ones by varying the parameters in the figure maker and/or the video maker, calling either one or both as best suits your needs. For more information on the parameters that can be changed to create unique simulations, see the "Parameters" sub-section of the "Using the repository" section.
@@ -224,8 +224,9 @@ There are many potential ways this project can be improved, or its scope expande
 - [ ] Assess/validate the implementation of the force between the cells and the boundary of the bioreactor — improvements may be possible.
 - [ ] Import a variety of background flow data to investigate this code base's ability to handle different geometries, coarseness, etc. This theoretically should work as long as the new background flow data is properly formatted, but it has not been extensively tested.
 - [ ] Use this code base to investigate shear stress experienced by the cells, a key parameter for their growth and death.
+- [ ] Test the limits of this code base — play around with how large of a simulation is feasible, in terms of number of agents or length of simulation. 
 - [ ] Improve the runtime efficiency of the cell_kinetics.m file. Particularly, the interp2 function is currently very costly, as it re-interpolates the fluid velocity and volume fraction at each cell's location at every timestep inside the ODE solver. Instead, one high-resolution interpolation could be created before entering the ODE solver, to avoid a high number of repeated calls to interp2.
-- [ ] Expand the code base to model cell growth and death. A possible starting point for this would be the work of [Cantarero-Rivera et al. (2024)](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full), who developed an agent-based model for cell growth in a stirred-tank bioreactor.
+- [ ] What I view as the ultimate goal: expand the code base to model cell growth and death. A possible starting point for this would be the work of [Cantarero-Rivera et al. (2024)](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full), who developed an agent-based model for cell growth in a stirred-tank bioreactor.
 
 
 ## Acknowledgements
