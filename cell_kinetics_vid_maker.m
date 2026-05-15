@@ -10,7 +10,7 @@ function cell_kinetics_vid_maker(tstop, n_agents, position)
 %   position    Either a string in ["random", "random bonded"], or a matrix
 %               of size [n_agents, 2] of doubles (column 1 = x vals,
 %               column 2 = y vals)
-% Outputs
+% Outputs:
 %   A video modeling the trajectories of the agents throughout the
 %   simulation.
 
@@ -131,6 +131,13 @@ close(vid);
 close(fig);
 
 function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
+% mustBeRandomRandomBondedOrPosMatrix ensures that the position input to
+% cell_kinetics is properly formatted
+% Inputs:
+%   position    The position input to cell_kinetics
+%   n_agents    The number of agents input to cell_kinetics
+% Outputs:
+%   An error if the position input is improperly formatted
 eidType = 'mustBeRandomRandomBondedOrPosMatrix:notAllowedValue';
 msgType = ['Input must be a string in ["random", "random bonded"], or ' ...
     'a matrix of size [n_agents, 2] column.'];

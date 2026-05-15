@@ -9,7 +9,7 @@ function cell_kinetics_fig_maker(tstop, n_agents, position)
 %   position    Either a string in ["random", "random bonded"], or a matrix 
 %               of size [n_agents, 2] of doubles (column 1 = x vals, 
 %               column 2 = y vals)
-% Outputs
+% Outputs:
 %   Figure plotting the trajectories of the cells on a plain background
 %   Figure plotting the trajectories of the cells with the background 
 %   vorticity
@@ -31,7 +31,6 @@ arguments
 end
 
 % Calling the simulator function
-
 my_output = cell_kinetics(tstop, n_agents, position);
 
 % Defining the required variables as the relevant fields from the output
@@ -196,6 +195,13 @@ subtitle(append('simulation time: ', num2str(tstop), [' s - total ' ...
     'agents: '], num2str(n_agents)))
 end
 function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
+% mustBeRandomRandomBondedOrPosMatrix ensures that the position input to
+% cell_kinetics is properly formatted
+% Inputs:
+%   position    The position input to cell_kinetics
+%   n_agents    The number of agents input to cell_kinetics
+% Outputs:
+%   An error if the position input is improperly formatted
 eidType = 'mustBeRandomRandomBondedOrPosMatrix:notAllowedValue';
 msgType = ['Input must be a string in ["random", "random bonded"], ' ...
     'or a matrix of size [n_agents, 2] column.'];

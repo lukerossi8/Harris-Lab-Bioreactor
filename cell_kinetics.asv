@@ -8,7 +8,7 @@ function my_output = cell_kinetics(tstop, n_agents, position)
 %   position    Either a string in ["random", "random bonded"], or a matrix 
 %               of size [n_agents, 2] of doubles (column 1 = x vals, 
 %               column 2 = y vals)
-% Outputs:
+% Outputs
 %   my_output   Struct containing the following fields:
 %       X_grid      Matrix containing x position at each point in 
 %                   background grid (m)
@@ -215,7 +215,8 @@ Fgy = m .* gy .* (1 - rho_local ./ rho_c); % N
 Fdx = -(6 * pi * mu_local .* r_c .* (vx - vfx_interp)); % N
 Fdy = -(6 * pi * mu_local .* r_c .* (vy - vfy_interp)); % N
 
-% Wall Repulsion Forces (Hybrid Soft/Hard Model)
+
+% --- Wall Repulsion Forces (Hybrid Soft/Hard Model) ---
 A_wall = 1e-4; % Base soft wall force at boundary (N)
 B_wall = 1e5;  % Decay constant for soft wall (1/m)
 K_wall = 1.0;  % Hookean restoring spring constant for boundary breach (N/m)
@@ -229,16 +230,17 @@ F_wall_high = -(A_wall * exp(-B_wall * max(0, ceil - y)) + K_wall * max(0, y - c
 F_wall_x = F_wall_left + F_wall_right;
 F_wall_y = F_wall_low + F_wall_high;
 
-% Cell-Cell Bonding Forces (Hysteresis Logic)
-X_dist = x - x'; % x displacement between pairs of agents (m)
-Y_dist = y - y'; % y displacement between pairs (m)
-D = sqrt(X_dist.^2 + Y_dist.^2); % distance between pairs (m)
+% --- Cell-Cell Bonding Forces (Restored Original Hysteresis Logic) ---
+X_dist = x - x'; % x displacement between pairs of agents
+Y_dist = y - y'; % y displacement between pairs
+D = sqrt(X_dist.^2 + Y_dist.^2); % distance between pairs
 Theta_bond = atan2(-Y_dist, -X_dist);
-R = r_c + r_c'; % Sum of radii of pairs (m)
-Delta_ij = D - R; % Degree of overlap or separation of pairs (m)
+R = r_c + r_c'; % Sum of radii of pairs
+Delta_ij = D - R; % Degree of overlap or separation of pairs
 
 % Bonding thresholds (for each pair)
 Delta_c = R; % Bond formation threshold, m
+% Theoretically Delta_c doesn't have to equal R, but in this context it does
 Delta_d = 1.4*Delta_c; % Bond breaking threshold, m
 
 % Updating Bonded_pairs matrix (Hysteresis logic)
@@ -281,13 +283,6 @@ end % End of eom
 end % end of cell_kinetics
 
 function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
-% mustBeRandomRandomBondedOrPosMatrix ensures that the position input to
-% cell_kinetics is properly formatted
-% Inputs:
-%   position    The position input to cell_kinetics
-%   n_agents    The number of agents input to cell_kinetics
-% Outputs:
-%   An error if the position input is improperly formatted
 eidType = 'mustBeRandomRandomBondedOrPosMatrix:notAllowedValue';
 msgType = 'Input must be a string in ["random", "random bonded"], or a matrix of size [n_agents, 2] column.';
 if isa(position, "string")

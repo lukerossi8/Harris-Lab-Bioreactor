@@ -34,14 +34,13 @@ To generate a video of the same default simulation, call `cell_kinetics_vid_make
 <img src="Videos/qs1_vid.gif" width="800">
 
 ### Example #2: a more complex simulation
-Now, let's model a more complex simulation. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, "random")` in your command window or terminal. The same four figures will be produced — the cell trajectory plots and the average velocity distribution histogram. The figures look like this:
+Now, let's model a more complex simulation. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, "random")` in your command window or terminal. The same four figures will be produced — the cell trajectory plots and the average velocity distribution histogram. The figures look like this (though not identical, since starting positions are randomized differently each time):
 
 | ![2nd quickstart figure 1](Figures/qs2_fig1.png) | ![2nd quickstart figure 2](Figures/qs2_fig2.png) |
 |---|---|
 | ![2nd quickstart figure 3](Figures/qs2_fig3.png) | ![2nd quickstart figure 4](Figures/qs2_fig4.png) |
 
-To generate the video of this simulation, call `cell_kinetics_vid_maker(10, 100, "random")` in your command window or terminal. The video looks like this:
-
+To generate a video of this simulation, call `cell_kinetics_vid_maker(10, 100, "random")` in your command window or terminal. The video will look something like this (though not identical due to randomized starting positions — and note that the video here does not use the same starting positions as the figures above):
 
 <img src="Videos/qs2_vid.gif" width="800">
 
@@ -58,12 +57,14 @@ Now that you've run a few simulations, you can create new ones by varying the pa
 ├── cell_kinetics_vid_maker.m                   % Produces a video of a simulation
 ├── time_dependent_flow_data.m                  % Pre-processor for the default background flow data
 ├── time_dependent_flow_data_out.mat.           % The processed default background flow data
-├── /Bioreactor_data_7deg_20rpm_lv6_onecycle/   % Folder containing all the unprocessed background flow data
+├── Bioreactor_data_7deg_20rpm_lv6_onecycle/   % Folder containing all the unprocessed background flow data
     └── (Background flow data files)   
-├── /Figures/
+├── Figures/
     └── (Figures of each quickstart example simulation)
-├── /Videos/
+├── Videos/
     └── (Videos of each quickstart example simulation)
+├── README.md                                   % Overview, quickstart guide, equations, and more
+├── rocking-bioreactor.png                      % Image in README.md
 ```
 
 ### Parameters 
@@ -183,9 +184,9 @@ Where $\theta$ is given by equation (5):
 5. $\theta = \theta_{max}\sin(\omega t_{eff}) = \theta_{max}\sin(\frac{2\pi t_{eff}}{T})$;
 
 Where:
-- $\theta_{max}$ is the rocking amplitude of $7^{\circ}$;
+- $\theta_{max}$ is the rocking amplitude of $7^{\circ}$ (expressed in radians as ~ $0.122$ rad);
 - $t_{eff}$ is the effective time, meaning the simulated time modded by the period; and
-- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~ $0.5953$ seconds.
+- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of 3 seconds.
 
 ### Drag equation
 The drag force is based upon Stokes' flow past a sphere. It is implemented using equation (6):
@@ -203,7 +204,7 @@ When cells come into contact with one another, they bond together. For bonded pa
 7. $|\vec{F}_{bond}| = K_{ij} \delta_{ij} \tanh(s_{ij}|\delta_{ij}|)$
 
 Where:
-- $K_{ij}$ is the bond spring constant of $1*10^{-3}$ Nm;
+- $K_{ij}$ is the bond spring constant of $10^{-3}$ Nm;
 - $\delta_{ij}$ is the overlap of the two cells — see equation (8); and
 - $s_{ij}$ is the bond stiffness parameter set at a value of $0.2$.
 - To find the x and y components, $|\vec{F}_{bond}|$ is multiplied by $\cos{\theta_b}$ and $\sin{\theta_b}$, respectively, where $\theta_b$ is the angle between the two bonded cells.
@@ -228,7 +229,7 @@ Where:
 - $A_{wall}$ is the base soft wall force at the boundary, with a value of $1*10^{-4}$ N;
 - $B_{wall}$ is the decay constant of $10^5$ 1/m;
 - $K_{wall}$ is the spring constant of $1.0$ N/m; and
-- $l_{wall}$, $r_{wall}$, $f$, and $c$ are the one-dimensional coordinates of the left wall ($-0.15$ m), right wall ($0.15$ m), floor ($-0.05$ m), and ceiling ($0.05$ m), respectively, of the bioreactor.
+- $l_{wall}$, $r_{wall}$, $f$, and $c$ are the one-dimensional coordinates of the left wall ($-0.123$ m), right wall ($0.123$ m), floor ($-0.0371$ m), and ceiling ($0.0371$ m), respectively, of the bioreactor.
 
 The forces are modulated so as to only take effect when a cell breaches one of the boundaries.
 
@@ -251,20 +252,20 @@ Expanding equation (13) gives equations (14) and (15), below:
 15. $F_{inertial,y} = m\cdot(2\omega\theta_{max}\cos{(\omega t_{eff})}v_x - \omega^2\theta_{max}\sin{(\omega t_{eff})}x - \omega^2\theta_{max}^2\cos^2{(\omega t_{eff})}y)$
 
 Where:
-- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~ $0.5953$ seconds;
-- $\theta_{max}$ is the rocking amplitude of $7^{\circ}$;
+- $\omega$ is the angular frequency of the bioreactor, given by $\omega = \frac{2\pi}{T}$, where $T$ is the period of ~ 3 seconds;
+- $\theta_{max}$ is the rocking amplitude of $7^{\circ}$ (expressed in radians as ~ $0.122$ rad);
 - $t_{eff}$ is the effective time, meaning the simulated time modded by the period;
 - $v_x$ and $v_y$ are the x and y components, respectively, of the cell's velocity in the inertial reference frame; and
 - $x$ and $y$ are the x and y positions, respectively, of the cell in the bioreactor.
 
 ## Future additions and improvements
-There are many potential ways this project can be improved, or its scope expanded. Future work on these objectives would be very welcome.
+There are many potential ways this project can be improved, or its scope expanded. Future work on these or other objectives would be very welcome.
 - [ ] Assess/validate the implementation of the force between the cells and the boundary of the bioreactor — improvements may be possible.
 - [ ] Import a variety of background flow data to investigate this code base's ability to handle different geometries, coarseness, etc. This theoretically should work as long as the new background flow data is properly formatted, but it has not been extensively tested.
 - [ ] Use this code base to investigate shear stress experienced by the cells, a key parameter for their growth and death.
 - [ ] Test the limits of this code base — play around with how large of a simulation is feasible, in terms of number of cells or length of simulation. 
 - [ ] Improve the runtime efficiency of the `cell_kinetics.m` file. Particularly, the interp2 function is currently very costly, as it re-interpolates the fluid velocity and volume fraction at each cell's location at every timestep inside the ODE solver. Instead, one high-resolution interpolation could be created before entering the ODE solver, to avoid a high number of repeated calls to interp2.
-- [ ] What I view as the ultimate goal: expand the code base to model cell growth and death. A possible starting point for this would be the work of [Cantarero-Rivera et al. (2024)](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full), who developed an agent-based model for cell growth in a stirred-tank bioreactor.
+- [ ] A key long-term goal: expand the code base to model cell growth and death. A possible starting point for this would be the work of [Cantarero-Rivera et al. (2024)](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full), who developed an agent-based model for cell growth in a stirred-tank bioreactor.
 
 
 ## Acknowledgements
