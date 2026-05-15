@@ -31,9 +31,8 @@ To generate a video of the same default simulation, call `cell_kinetics_vid_make
 ### A more complex simulation
 Now, let's model a more complex scenario. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, "random")` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. The figures look like this:
 
-|  |  |
-|---|---|
 | ![2nd quickstart figure 1](Figures/qs2_fig1.png) | ![2nd quickstart figure 2](Figures/qs2_fig2.png) |
+|---|---|
 | ![2nd quickstart figure 3](Figures/qs2_fig3.png) | ![2nd quickstart figure 4](Figures/qs2_fig4.png) |
 
 To generate the video of this simulation, call `cell_kinetics_vid_maker(10, 100, "random")` in your command window or terminal. The video looks like this:
