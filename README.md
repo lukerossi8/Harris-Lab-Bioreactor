@@ -2,17 +2,17 @@
 This repository contains a collection of MATLAB functions that model cell dynamics in a rocking bioreactor environment. It models cell motion in a periodic background flow field based on prior CFD simulation data. It also models bonding interactions between cells. Users can customize the length of the simulation, the number of cells, and the cells' initial positions.
 
 ## Overview
-The cells' motion is modeled by implementing four forces on each cell: Gravity/buoyancy, drag, a boundary interactive (repulsion) force, and a cell bonding force. Using these forces and a periodic fluid flow field imported from previous simulation data, this code base is able to compute each cell's position and velocity throughout the simulation. This data can be used to plot graphs and videos of the cells' trajectories. Future work may expand this project to model cell growth and death over the course of a simulation.
+The cells' motion is modeled by implementing four forces on each cell: Gravity/buoyancy, drag, a boundary interactive (repulsion) force, and a cell bonding force. Using these forces and a periodic fluid flow field imported from previous simulation data, this code base is able to compute each cell's position and velocity throughout the simulation. This data can be used to plot figures and videos of the cells' trajectories. Future work may expand this project to model cell growth and death over the course of a simulation.
 
-The previous simulation data was created using [Basilisk](https://basilisk.fr/), an open-source CFD software.
+The periodic flow field data was created using [Basilisk](https://basilisk.fr/), an open-source CFD software.
 
 ## Background and motivation
 
 <img src="rocking-bioreactor.png" width="350">
 
- Rocking bioreactors are a promising candidate in cultivated meat bioprocess optimization. They impart relatively low shear stresses on cells, along with being disposable and cost-effective. This makes them a potentially attractive alternative to stirred-tank bioreactors. Studying these bioreactors through physical experimentation is time-consuming and costly, but computational simulations can provide valuable insights to help inform physical experiments and fuel bioprocess innovations.
+ Rocking bioreactors are a promising candidate in cultivated meat bioprocess optimization. They impart relatively low shear stresses on cells, along with being disposable and cost-effective. This makes them a potentially attractive alternative to stirred-tank bioreactors. Studying these bioreactors through physical experimentation is time-consuming and costly, but computational simulations can provide valuable insights to help inform physical experiments and fuel bioprocess innovations in a quicker and more cost-effective way.
  
- [Cultivated meat](https://gfi.org/science/the-science-of-cultivated-meat/) promises to address crucial problems in the animal agriculture industry. It has the potential to drastically reduce the environmental impact, resource inefficiency, and animal suffering associated with meat production. As the global population rises and meat consumption increases along with it, new methods of producing meat can reduce resource constraints and environmental damage.
+ [Cultivated meat](https://gfi.org/science/the-science-of-cultivated-meat/) promises to address crucial problems in the animal agriculture industry. It has the potential to drastically reduce the environmental impact, resource inefficiency, and animal suffering associated with meat production. As the global population rises and meat consumption increases along with it, new methods of producing meat can reduce resource constraints, environmental damage, and animal cruelty.
 
 ## Quickstart guide
 Follow the steps outlined in this section to gain familiarity with the core functionality of the repository, and to prepare to run simulations of your own design.
@@ -23,8 +23,8 @@ This repository was created using MATLAB R2024b.
 ### Cloning the repository
 `git clone https://github.com/lukerossi8/Rocking-Bioreactor-Cell-Kinetics`
 
-### Creating a basic simulation
-Let's start by modeling a simple case — the repository's default simulation. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `cell_kinetics_fig_maker()` in your command window or terminal. This will produce four figures: three of the particle trajectories, and one of a velocity distribution histogram of the cells. The figures look like this:
+### Example #1: creating a basic simulation
+Let's start by modeling a simple case — the repository's default simulation. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `cell_kinetics_fig_maker()` in your command window or terminal. This will produce four figures: three of the particle trajectories, and one of an average velocity distribution histogram of the cells. The figures look like this:
 | ![1st quickstart figure 1](Figures/qs1_fig1.png) | ![1st quickstart figure 2](Figures/qs1_fig2.png) |
 |---|---|
 | ![1st quickstart figure 3](Figures/qs1_fig3.png) | ![1st quickstart figure 4](Figures/qs1_fig4.png) |
@@ -33,8 +33,8 @@ To generate a video of the same default simulation, call `cell_kinetics_vid_make
 
 <img src="Videos/qs1_vid.gif" width="800">
 
-### A more complex simulation
-Now, let's model a more complex simulation. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, "random")` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. The figures look like this:
+### Example #2: a more complex simulation
+Now, let's model a more complex simulation. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, "random")` in your command window or terminal. The same four figures will be produced — the cell trajectory plots and the average velocity distribution histogram. The figures look like this:
 
 | ![2nd quickstart figure 1](Figures/qs2_fig1.png) | ![2nd quickstart figure 2](Figures/qs2_fig2.png) |
 |---|---|
@@ -67,26 +67,60 @@ Now that you've run a few simulations, you can create new ones by varying the pa
 ```
 
 ### Parameters 
-You can modify three parameters in these simulations: the length of the simulation (`tstop`), the number of cells in the simulation (`n_agents`), and the initial positions of the cells (`position`). So, the syntax for calling either the figure maker is `cell_kinetics_fig_maker(tstop, n_agents, position)`, and for the video maker, it's the same: `cell_kinetics_vid_maker(tstop, n_agents, position)`.
+You can modify three parameters in these simulations: the length of the simulation (`tstop`), the number of cells in the simulation (`n_agents`), and the initial positions of the cells (`position`). So, the syntax for calling the figure maker is `cell_kinetics_fig_maker(tstop, n_agents, position)`, and for the video maker, it's the same: `cell_kinetics_vid_maker(tstop, n_agents, position)`.
 
 Let's talk about each parameter.
 
-`tstop` is the amount of time being simulated in the simulation, in seconds. The default value is 0.5 seconds.
+`tstop` is the amount of time being simulated in the simulation, in seconds. The default value is 3 seconds.
 
 `n_agents` is the number of cells being modeled in the simulation. The default value is 6 cells.
 
-`position` is where you define the initial positions of the cells. There are three types of initial positions: random, random bonded, or manual. 
+`position` is where you can define the initial positions of the cells. There are three types of initial positions: random, random bonded, or manual. 
 - Random positions mean the cells are allocated randomly throughout the domain, with a buffer zone to prevent them from being initialized right next to the walls. Set `position = "random"`
-- Random bonded positions mean that the cells are randomly positioned as well, but under the condition that each cell will begin right next to another cell, such that it will bond with that cell immediately. If there are an odd number of cells in the simulation, the last one will not be bonded to any other cell. Set `position = "random bonded"`
-- Manual positions allow you to define exactly where each cell will be initialized. To do this, set `position` equal to a matrix of size [n_agents, 2]. Each row represents the position of each cell; the first column is the x position (range = [-0.5, 0.5]), and the second is the y position (range = [-0.15, 0.15]). Make sure to create a matrix that is the correct size - that is, that you define a position for all the cells, and no more. For example, here is the position matrix for the default case, where `n_agents = 6`:
-> `position = [0, -0.05;
-        -0.01, -0.06;
-        -0.02, -0.07;
-        -0.03, -0.08;
-        -0.04, -0.09;
-        -0.05, -0.10];`
+- Random bonded positions mean that the cells are randomly positioned as well, but under the condition that each cell will begin right next to another cell, such that it will bond with that cell immediately. So, half of the cells are randomly allocated as above, and the other half are positioned next to another cell. If there are an odd number of cells in the simulation, the last one will not be bonded to any other cell. Set `position = "random bonded"`
+- Manual positions allow you to define exactly where each cell will be initialized. To do this, set `position` equal to a matrix of size [n_agents, 2]. Each row represents the position of each cell; the first column is the x position (range should be the same as your bioreactor range in the x direction), and the second is the y position (range should be the same as your bioreactor range in the y direction). Make sure to create a matrix that is the correct size - that is, that you define a position for all the cells, and no more. For example, here is the position matrix for the default case, where `n_agents = 6`:
+> `position = [0, -0.01;
+        -0.002, -0.012;
+        -0.004, -0.014;
+        -0.006, -0.016;
+        -0.008, -0.018;
+        -0.01, -0.02];`
 
 ### Outputs
+
+This section outlines the outputs of the three functions in the code base — `cell-kinetics.m`, `cell-kinetics-fig-maker.m`, and `cell-kinetics-vid-maker.m`.
+
+#### cell-kinetics.m
+This function produces a struct `my_output` with the following fields:
+- `X_grid`, a matrix containing the x position at each point in the background grid (m)
+- `Y_grid`, a matrix containing the y position at each point in the background grid (m)
+- `vfx_disc`, a matrix containing the x component of the background flow velocity at each point in the background grid (m/s)
+- `vfy_disc`, a matrix containing the y component of the background flow velocity at each point in the background grid (m/s)
+- `z_all_plot`, a matrix containing position and velocity data (x and y components) for each cell at each timestep (m/s)
+- `n_agents`, a double representing the number of cells being modeled
+- `s0`, a vector containing the initial positions of all cells
+- `flow_data`, the imported flow data from the `time_dependent_flow_data.m` script
+- `t_plot`, a vector containing the time at each simulation step (s)
+- `times`, a vector containing times associated with each background flow snapshot (s)
+- `runtime`, a double representing the elapsed time to run the simulation (s)
+- `theta`, a vector containing rocking angle at selected timesteps (rad)
+- `period`, a double representing the rocking period (s)
+
+#### cell-kinetics-fig-maker.m
+This function produces four figures:
+- A figure plotting the trajectories of the cells on a plain background
+- A figure plotting the trajectories of the cells with the background vorticity
+- A figure plotting the trajectories of the cells with the background volume fraction 
+- A histogram of the distribution of cell average velocities over the simulation
+
+These figures will appear, but are not automatically saved, so they must be manually saved.
+
+#### cell-kinetics-vid-maker.m
+This function produces a video of the cells' movements throughout the simulation, with the volume fraction in the background. The volume fraction changes each timestep to always display the current volume fraction throughout the video. 
+
+The video is automatically saved to your current folder. To create a video a simulation that is the same length as a previous video you've created, make sure to rename the previous video. Otherwise, by default, the function will overwrite the previous video with the new one (only when the two videos depict the same length of simulation).
+
+
 
 ### Using your own background flow data
 
@@ -106,9 +140,9 @@ The repository is currently configured to take in background flow from the provi
 | 2  | 1 |
 | 3  | 1 |
 
-  - The second dimension should represent each attribute of a given background flow grid point. These columns should be ordered in the following way: x position of the grid point, y position, x velocity at that grid point, y velocity, volume fraction at that grid point. Subsequent attributes are permitted but are not used.
+  - The second dimension should represent each attribute of a given background flow grid point. These columns should be ordered in the following way: x position, y position, x velocity, y velocity, volume fraction. Subsequent attributes are permitted but are not used.
   - The third dimension should represent each time snapshot of the underlying flow field.
-- The file should also contain a variable `times`, representing the time associated with each third-dimension flow field snapshot. As such, `times` should be a one-dimensional column vector of the same length as the third dimension of the `all_data` matrix
+- The file should also contain a variable `times`, representing the time associated with each third-dimension flow field snapshot. As such, `times` should be a one-dimensional column vector of the same length as the third dimension of the `all_data` matrix.
 - All values should be dimensionalized with the following units:
   - positions: meters
   - velocities: meters per second
@@ -196,7 +230,7 @@ Where:
 - $K_{wall}$ is the spring constant of $1.0$ N/m; and
 - $l_{wall}$, $r_{wall}$, $f$, and $c$ are the one-dimensional coordinates of the left wall ($-0.15$ m), right wall ($0.15$ m), floor ($-0.05$ m), and ceiling ($0.05$ m), respectively, of the bioreactor.
 
-The forces are modulated so as to only take effect when an agent breaches one of the boundaries.
+The forces are modulated so as to only take effect when a cell breaches one of the boundaries.
 
 ### Inertial terms
 The simulation takes place in a non-inertial reference frame, so terms must be added to the equation of motion to account for fictitious forces experienced by the cells. These terms are taken from equation (13):
@@ -228,8 +262,8 @@ There are many potential ways this project can be improved, or its scope expande
 - [ ] Assess/validate the implementation of the force between the cells and the boundary of the bioreactor — improvements may be possible.
 - [ ] Import a variety of background flow data to investigate this code base's ability to handle different geometries, coarseness, etc. This theoretically should work as long as the new background flow data is properly formatted, but it has not been extensively tested.
 - [ ] Use this code base to investigate shear stress experienced by the cells, a key parameter for their growth and death.
-- [ ] Test the limits of this code base — play around with how large of a simulation is feasible, in terms of number of agents or length of simulation. 
-- [ ] Improve the runtime efficiency of the cell_kinetics.m file. Particularly, the interp2 function is currently very costly, as it re-interpolates the fluid velocity and volume fraction at each cell's location at every timestep inside the ODE solver. Instead, one high-resolution interpolation could be created before entering the ODE solver, to avoid a high number of repeated calls to interp2.
+- [ ] Test the limits of this code base — play around with how large of a simulation is feasible, in terms of number of cells or length of simulation. 
+- [ ] Improve the runtime efficiency of the `cell_kinetics.m` file. Particularly, the interp2 function is currently very costly, as it re-interpolates the fluid velocity and volume fraction at each cell's location at every timestep inside the ODE solver. Instead, one high-resolution interpolation could be created before entering the ODE solver, to avoid a high number of repeated calls to interp2.
 - [ ] What I view as the ultimate goal: expand the code base to model cell growth and death. A possible starting point for this would be the work of [Cantarero-Rivera et al. (2024)](https://www.frontiersin.org/journals/food-science-and-technology/articles/10.3389/frfst.2023.1295245/full), who developed an agent-based model for cell growth in a stirred-tank bioreactor.
 
 

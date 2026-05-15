@@ -1,7 +1,3 @@
-% Probably should put a function wrapper here too so that users can call
-% this from the command window with their own inputs, rather than having to
-% enter their inputs into this script (thus still needing to edit a script)
-
 function cell_kinetics_fig_maker(tstop, n_agents, position)
 % cell_kinetics_fig_maker creates visualizations of agent behavior in a
 % bioreactor environment, by calling the cell_kinetics function
@@ -14,9 +10,13 @@ function cell_kinetics_fig_maker(tstop, n_agents, position)
 %               of size [n_agents, 2] of doubles (column 1 = x vals, 
 %               column 2 = y vals)
 % Outputs
-%   Figures representing the trajectories of the agents with the background 
-%   vorticity, the trajectories with the background volume fraction, and 
-%   the timestep size over the course of the simulation.
+%   Figure plotting the trajectories of the cells on a plain background
+%   Figure plotting the trajectories of the cells with the background 
+%   vorticity
+%   Figure plotting the trajectories of the cells with the background 
+%   volume fraction 
+%   Histogram of the distribution of cell average velocities over the
+%   simulation
 
 arguments
     tstop (1,1) double = 3;
