@@ -1,4 +1,4 @@
-# Harris-Lab-Bioreactor
+# Rocking-Bioreactor-Cell-Kinetics
 This repository contains a collection of MATLAB functions that model cell dynamics in a rocking bioreactor environment. It models cell motion in a periodic background flow field based on prior CFD simulation data. It also models bonding interactions between cells. Users can customize the length of the simulation, the number of cells, and the cells' initial positions.
 
 ## Overview
@@ -19,12 +19,27 @@ This repository was created using MATLAB R2024b.
 `git clone https://github.com/lukerossi8/Rocking-Bioreactor-Cell-Kinetics`
 
 ### Creating a basic simulation
-Let's start by modeling a simple case — the repository's default simulation — to ensure everything is working smoothly. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `cell_kinetics_fig_maker()` in your command window or terminal. This will produce a figure of the particle trajectories, as well as plots of the cell velocities over time and the shear stress experienced by each cell over time.
+Let's start by modeling a simple case — the repository's default simulation — to ensure everything is working smoothly. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `cell_kinetics_fig_maker()` in your command window or terminal. This will produce four figures: three of the particle trajectories, and one of a velocity distribution histogram of the cells. The figures look like this:
+|  |  |
+|---|---|
+| ![1st quickstart figure 1](Figures/qs1_fig1.png) | ![1st quickstart figure 2](Figures/qs1_fig2.png) |
+| ![1st quickstart figure 3](Figures/qs1_fig3.png) | ![1st quickstart figure 4](Figures/qs1_fig4.png) |
 
-To generate a video of the same default simulation, call `cell_kinetics_vid_maker()` in your command window or terminal. This will produce a video of the cells moving through the bioreactor environment.
+To generate a video of the same default simulation, call `cell_kinetics_vid_maker()` in your command window or terminal. This will produce a (nearly real-speed) video of the cells moving through the bioreactor environment. The video looks like this:
+
+![1st quickstart video](Videos/qs1_vid.gif)
 
 ### A more complex simulation
-Now, let's model a more complex scenario. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, 'random')` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. To generate the video of this simulation, call `cell_kinetics_vid_maker()` in your command window or terminal. 
+Now, let's model a more complex scenario. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, "random")` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. The figures look like this:
+
+|  |  |
+|---|---|
+| ![2nd quickstart figure 1](Figures/qs2_fig1.png) | ![2nd quickstart figure 2](Figures/qs2_fig2.png) |
+| ![2nd quickstart figure 3](Figures/qs2_fig3.png) | ![2nd quickstart figure 4](Figures/qs2_fig4.png) |
+
+To generate the video of this simulation, call `cell_kinetics_vid_maker(10, 100, "random")` in your command window or terminal. The video looks like this:
+
+![2nd quickstart video](Videos/qs2_vid.gif)
 
 ### Creating your own simulations
 Now that you've run a few simulations, you can create new ones by varying the parameters in the figure maker and/or the video maker, calling either one or both as best suits your needs. For more information on the parameters that can be changed to create unique simulations, see the "Parameters" sub-section of the "Using the repository" section.
@@ -39,8 +54,12 @@ Now that you've run a few simulations, you can create new ones by varying the pa
 ├── cell_kinetics_vid_maker.m                   % Produces a video of a simulation
 ├── time_dependent_flow_data.m                  % Pre-processor for the default background flow data
 ├── time_dependent_flow_data_out.mat.           % The processed default background flow data
-├── /Bioreactor_data_7deg_20rpm_lv6_onecycle/    % Folder containing all the unprocessed background flow data
-    └── (Background flow data files)     
+├── /Bioreactor_data_7deg_20rpm_lv6_onecycle/   % Folder containing all the unprocessed background flow data
+    └── (Background flow data files)   
+├── /Figures/
+    └── (Figures of each quickstart example simulation)
+├── /Videos/
+    └── (Videos of each quickstart example simulation)
 ```
 
 ### Parameters 
@@ -68,7 +87,7 @@ Let's talk about each parameter.
 ### Using your own background flow data
 
 The repository is currently configured to take in background flow from the provided `time_dependent_flow_data_out.mat` file. To use your own flow data, replace this file with one of your own creation. This file should have the following qualities:
-- The file should contain a variable `all_data`, containing a 3D matrix that represents one full period of rocking motion.
+- The file should contain a variable `all_data`, containing a 3D matrix that represents one full period of rocking motion. (It is not required that the matrix contains exactly one period, but note that the flow will cycle by default.)
   - The first dimension of this matrix should represent each point of the background flow grid. The points should be sorted first in ascending order by their x position, and then in descending order by their y position. The resulting order of points should look like this:
     
 | x  | y |
@@ -99,7 +118,7 @@ The simulation solves the equation of motion for each cell as it moves through t
 ### Overall equation of motion
 Equation (1) defines the forces experienced by each cell and modeled in this simulation.
 
-1. $d\vec{v}/dt = \frac{\vec{F}_g + \vec{F}_d + ∑\vec{F}_{bond} + \vec{F}_{boundary} - \vec{F}_{inertial}}{m_c}$
+1. $\frac{d\vec{v}}{dt} = \frac{\vec{F}_g + \vec{F}_d + ∑\vec{F}_{bond} + \vec{F}_{boundary} - \vec{F}_{inertial}}{m_c}$
 
 Where $m_c$ is the mass of the cell, and each $\vec{F}$ term in the numerator is elaborated in the following sub-sections.
 
@@ -202,7 +221,7 @@ Where:
 
 ## Future additions and improvements
 There are many potential ways this project can be improved, or its scope expanded. Future work on these objectives would be very welcome.
-- [ ] The implementation of the force between the cells and the boundary of the bioreactor may benefit from further validation, and improvements may be possible.
+- [ ] Assess/validate the implementation of the force between the cells and the boundary of the bioreactor — improvements may be possible.
 - [ ] Import a variety of background flow data to investigate this code base's ability to handle different geometries, coarseness, etc. This theoretically should work as long as the new background flow data is properly formatted, but it has not been extensively tested.
 - [ ] Use this code base to investigate shear stress experienced by the cells, a key parameter for their growth and death.
 - [ ] Improve the runtime efficiency of the cell_kinetics.m file. Particularly, the interp2 function is currently very costly, as it re-interpolates the fluid velocity and volume fraction at each cell's location at every timestep inside the ODE solver. Instead, one high-resolution interpolation could be created before entering the ODE solver, to avoid a high number of repeated calls to interp2.

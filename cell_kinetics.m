@@ -137,7 +137,7 @@ options = odeset('Refine', 100, ...
     'AbsTol', AbsTol);
 
 odeFun = @(t, z)eom(t, z, mu_f, mu_a, r_c, X_grid, Y_grid, m, theta_max, period, omega, rho_f, rho_a, rho_c, n_agents, flow_data, grid_length, grid_height);
-[t_plot, z_all_plot] = ode45(odeFun, tstart:(2*dt):tstop, z0, options);
+[t_plot, z_all_plot] = ode45(odeFun, tstart:(dt):tstop, z0, options);
 
 elapsed_time = toc;
 disp(elapsed_time)

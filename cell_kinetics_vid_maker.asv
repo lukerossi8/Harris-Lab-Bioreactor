@@ -101,8 +101,7 @@ for ii=1:step:length(t_plot)
     yl = ylabel(cb,'Volume fraction','FontSize',10,'Rotation',270);
 
     for j=1:n_agents
-        plot(x_plot(1:ii,j), y_plot(1:ii,j), 'color', ...
-            col_list(mod(j, 4)+1), "LineWidth", 1.25);
+        plot(x_plot(1:ii,j), y_plot(1:ii,j), 'color', col_list(mod(j, 4)+1), "LineWidth", 1.25);
         plot(x_plot(ii,j), y_plot(ii,j), "or", "LineWidth", 1.25)
     end
     grid on
@@ -115,10 +114,8 @@ for ii=1:step:length(t_plot)
         xlim([floor*1.1 ceil*1.1])
         ylim([floor*1.1 ceil*1.1])
     end
-    title(['Cell trajectories in time-dependent bioreactor simulation ' ...
-        'flow field - plain background'])
-    subtitle('time: ' + string(t_plot(ii)) + [' seconds — rocking ' ...
-        'period: '] + period + ' seconds')
+    title('Cell trajectories in time-dependent bioreactor simulation flow field - plain background')
+    subtitle('time: ' + string(t_plot(ii)) + ' seconds — period time: 0.595 seconds')
 
     % Capture the frame
     frame = getframe(gcf);
@@ -132,8 +129,7 @@ close(fig);
 
 function mustBeRandomRandomBondedOrPosMatrix(position, n_agents)
 eidType = 'mustBeRandomRandomBondedOrPosMatrix:notAllowedValue';
-msgType = ['Input must be a string in ["random", "random bonded"], or ' ...
-    'a matrix of size [n_agents, 2] column.'];
+msgType = 'Input must be a string in ["random", "random bonded"], or a matrix of size [n_agents, 2] column.';
 if isa(position, "string")
     if ~ismember(position, ["random", "random bonded"])
         error(eidType, msgType)
