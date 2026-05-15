@@ -57,7 +57,7 @@ Now that you've run a few simulations, you can create new ones by varying the pa
 ├── cell_kinetics_vid_maker.m                   % Produces a video of a simulation
 ├── time_dependent_flow_data.m                  % Pre-processor for the default background flow data
 ├── time_dependent_flow_data_out.mat.           % The processed default background flow data
-├── Bioreactor_data_7deg_20rpm_lv6_onecycle/   % Folder containing all the unprocessed background flow data
+├── Bioreactor_data_7deg_20rpm_lv6_onecycle/    % Folder containing all the unprocessed background flow data
     └── (Background flow data files)   
 ├── Figures/
     └── (Figures of each quickstart example simulation)
