@@ -6,8 +6,13 @@ The cells' motion is modeled by implementing four forces on each cell: Gravity/b
 
 The previous simulation data was created using [Basilisk](https://basilisk.fr/), an open-source CFD software.
 
-## Background
- Rocking bioreactors are a promising candidate in  cultivated meat bioprocess optimization. They impart relatively low shear stresses on cells, along with being disposable and cost-effective. 
+## Background and motivation
+
+<img src="rocking-bioreactor.png" width="350">
+
+ Rocking bioreactors are a promising candidate in cultivated meat bioprocess optimization. They impart relatively low shear stresses on cells, along with being disposable and cost-effective. This makes them a potentially attractive alternative to stirred-tank bioreactors. Studying these bioreactors through physical experimentation is time-consuming and costly, but computational simulations can provide valuable insights to help inform physical experiments and fuel bioprocess innovations.
+ 
+ [Cultivated meat](https://gfi.org/science/the-science-of-cultivated-meat/) promises to address crucial problems in the animal agriculture industry. It has the potential to drastically reduce the environmental impact, resource inefficiency, and animal suffering associated with meat production. As the global population rises and meat consumption increases along with it, new methods of producing meat can reduce resource constraints and environmental damage.
 
 ## Quickstart guide
 Follow the steps outlined in this section to gain familiarity with the core functionality of the repository, and to prepare to run simulations of your own design.
@@ -19,7 +24,7 @@ This repository was created using MATLAB R2024b.
 `git clone https://github.com/lukerossi8/Rocking-Bioreactor-Cell-Kinetics`
 
 ### Creating a basic simulation
-Let's start by modeling a simple case — the repository's default simulation — to ensure everything is working smoothly. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `cell_kinetics_fig_maker()` in your command window or terminal. This will produce four figures: three of the particle trajectories, and one of a velocity distribution histogram of the cells. The figures look like this:
+Let's start by modeling a simple case — the repository's default simulation. This simulation will model the motion of 6 cells in the rocking bioreactor for 0.5 seconds. To run this simulation, call `cell_kinetics_fig_maker()` in your command window or terminal. This will produce four figures: three of the particle trajectories, and one of a velocity distribution histogram of the cells. The figures look like this:
 | ![1st quickstart figure 1](Figures/qs1_fig1.png) | ![1st quickstart figure 2](Figures/qs1_fig2.png) |
 |---|---|
 | ![1st quickstart figure 3](Figures/qs1_fig3.png) | ![1st quickstart figure 4](Figures/qs1_fig4.png) |
@@ -29,7 +34,7 @@ To generate a video of the same default simulation, call `cell_kinetics_vid_make
 <img src="Videos/qs1_vid.gif" width="800">
 
 ### A more complex simulation
-Now, let's model a more complex scenario. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, "random")` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. The figures look like this:
+Now, let's model a more complex simulation. This time, we'll model 100 cells, randomly placed, for 10 seconds. To run this simulation, call `cell_kinetics_fig_maker(10, 100, "random")` in your command window or terminal. The same types of figures will be produced — the cell trajectories, velocities over time, and shear stress over time. The figures look like this:
 
 | ![2nd quickstart figure 1](Figures/qs2_fig1.png) | ![2nd quickstart figure 2](Figures/qs2_fig2.png) |
 |---|---|
@@ -124,9 +129,9 @@ Where $m_c$ is the mass of the cell, and each $\vec{F}$ term in the numerator is
 Note that in the code base, the above equation and the following equations for each force are broken into their $x$ and $y$ components. For simplicity, here, they are usually presented in vector form.
 
 ### Gravity and buoyancy equations
-$\vec{F_g}$ is the force due to gravity and buoyancy, modeled by equation (2):
+$\vec{F}_g$ is the force due to gravity and buoyancy, modeled by equation (2):
 
-2. $\vec{F_g} = m\vec{g}(1-\frac{\rho_{local}}{\rho_c})$
+2. $\vec{F}_g = m\vec{g}(1-\frac{\rho_{local}}{\rho_c})$
 
 Where:
 - $m$ is the mass of the cell;
@@ -151,23 +156,23 @@ Where:
 ### Drag equation
 The drag force is based upon Stokes' flow past a sphere. It is implemented using equation (6):
 
-6. $\vec{F_d} = -6\pi \mu_f r_c \vec{v_{rel}}$
+6. $\vec{F}_d = -6\pi \mu_f r_c \vec{v}_{rel}$
 
 Where:
 - $\mu_{local}$ is the local density of the background fluid;
 - $r_c$ is the radius of the cell; and
-- $\vec{v_{rel}}$ is the relative velocity of the cell to the background fluid, $\vec{v_{rel}} = \vec{v_{cell}} - \vec{v_{fluid}}$ (both in the rotational reference frame).
+- $\vec{v}_{rel}$ is the relative velocity of the cell to the background fluid, $\vec{v}_{rel} = \vec{v}_{cell} - \vec{v}_{fluid}$ (both in the rotational reference frame).
 
 ### Cell bonding equations
 When cells come into contact with one another, they bond together. For bonded pairs of cells, a bonding force is applied between them according to equation (7):
 
-7. $|\vec{F_{bond}}| = K_{ij} \delta_{ij} \tanh(s_{ij}|\delta_{ij}|)$
+7. $|\vec{F}_{bond}| = K_{ij} \delta_{ij} \tanh(s_{ij}|\delta_{ij}|)$
 
 Where:
 - $K_{ij}$ is the bond spring constant of $1*10^{-3}$ Nm;
 - $\delta_{ij}$ is the overlap of the two cells — see equation (8); and
 - $s_{ij}$ is the bond stiffness parameter set at a value of $0.2$.
-- To find the x and y components, $|\vec{F_{bond}}|$ is multiplied by $\cos{\theta_b}$ and $\sin{\theta_b}$, respectively, where $\theta_b$ is the angle between the two bonded cells.
+- To find the x and y components, $|\vec{F}_{bond}|$ is multiplied by $\cos{\theta_b}$ and $\sin{\theta_b}$, respectively, where $\theta_b$ is the angle between the two bonded cells.
 
 The overlap of the two bonded cells, $\delta_{ij}$, is given by equation (8):
 
@@ -196,15 +201,15 @@ The forces are modulated so as to only take effect when an agent breaches one of
 ### Inertial terms
 The simulation takes place in a non-inertial reference frame, so terms must be added to the equation of motion to account for fictitious forces experienced by the cells. These terms are taken from equation (13):
 
-13. $\vec{F_{inertial}} = 2\vec{\Omega}\times\vec{v_c} + \dot{\vec{\Omega}}\times\vec{x_c} + \vec{\Omega}\times(\vec{\Omega}\times\vec{x_c})$
+13. $\vec{F}_{inertial} = 2\vec{\Omega}\times\vec{v}_c + \dot{\vec{\Omega}}\times\vec{x}_c + \vec{\Omega}\times(\vec{\Omega}\times\vec{x}_c)$
 
 Where:
 - The first term represents the Coriolis acceleration;
 - The second term represents the angular acceleration;
 - The last term represents the centrifugal acceleration;
 - $\vec{\Omega}$ is the rotational velocity of the bioreactor, given by $\vec{\Omega} = \omega\cos{(\omega t_{eff})}\theta_{max}\hat{z}$ ;
-- $\vec{v_c}$ is the cell's velocity in the rotational frame; and
-- $\vec{x_c}$ is the cell's position in the bioreactor.
+- $\vec{v}_c$ is the cell's velocity in the rotational frame; and
+- $\vec{x}_c$ is the cell's position in the bioreactor.
 
 Expanding equation (13) gives equations (14) and (15), below:
 
